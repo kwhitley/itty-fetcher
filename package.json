@@ -1,16 +1,16 @@
 {
   "name": "itty-fetcher",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An even simpler wrapper around native Fetch to strip boilerplate from your fetching code.",
   "sourceType": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/itty-fetcher.js",
+  "module": "./dist/itty-fetcher.mjs",
+  "types": "./dist/itty-fetcher.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/itty-fetcher.js",
+      "import": "./dist/itty-fetcher.mjs",
+      "types": "./dist/itty-fetcher.d.ts"
     }
   },
   "scripts": {
