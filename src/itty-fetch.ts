@@ -1,39 +1,29 @@
-export interface FetcherOverrides {
+interface FetcherOverrides {
   base?: string,
   autoParse?: boolean,
 }
 
-export interface FetcherOptions {
+interface FetcherOptions {
   base: string,
   autoParse: boolean,
 }
 
-type InnerFetcherFunction = <T>(
+type FetchyFunction = (
   url: string,
-  payload?: any,
+  payload?: string | number | object | undefined | FormData,
   options?: object | undefined
-) => Promise<T>
+) => Promise<any>
 
 type FetchTraps = {
-  [key: string]: InnerFetcherFunction
+  [key: string]: FetchyFunction
 }
-
-type OuterFetcherFunction = (method: string) => InnerFetcherFunction
 
 type FetcherType = FetcherOptions & {
-  get: InnerFetcherFunction,
-  post: InnerFetcherFunction,
-  put: InnerFetcherFunction,
-  delete: InnerFetcherFunction,
-  [key: string]: InnerFetcherFunction
-}
-
-type FetchyFunction = <T>(
-  url: string,
-  payload?: object | string | any[] | number | undefined,
-  options?: object | undefined
-) => Promise<T>
-
+  get: FetchyFunction,
+  post: FetchyFunction,
+  put: FetchyFunction,
+  delete: FetchyFunction
+} & FetchTraps
 
 type FetchyOptions = {
   method: string,
@@ -41,23 +31,27 @@ type FetchyOptions = {
 
 type FetchOptions = {
   headers?: HeadersInit,
-  [key: string]: any,
+  [key: string]: string | boolean | object,
 }
 
-const fetchy = (options: FetchyOptions) => <FetchyFunction>(url: string, payload?: any, fetchOptions?: FetchOptions) => {
+const fetchy = (options: FetchyOptions): FetchyFunction => (
+  url: string,
+  payload?: string | number | object | undefined,
+  fetchOptions?: FetchOptions,
+) => {
   const {
     base,
     autoParse,
     method,
   } = options
 
-  return fetch(options.base + url, {
+  return fetch(base + url, {
     method: method.toUpperCase(),
     headers: {
       'Content-Type': 'application/json',
-      ...fetchOptions.headers,
+      ...fetchOptions?.headers,
     },
-    body: payload ? JSON.stringify(payload) : undefined,
+    body: JSON.stringify(payload),
     ...fetchOptions
   })
   .then(response => {
@@ -81,15 +75,12 @@ export function fetcher(fetcherOptions?: FetcherOverrides) {
     autoParse: true,
     ...fetcherOptions,
   }, {
-    get: (obj, prop: string, receiver: object) => typeof obj[prop] === 'function'
-                                  ? obj[prop].bind(receiver)
-                                  : obj[prop] !== undefined
-                                    ? obj[prop]
-                                    : fetchy({
-                                        method: prop,
-                                        ...obj,
-                                      })
+    get: (obj, prop: string) =>
+      obj[prop] !== undefined
+      ? obj[prop]
+      : fetchy({
+          method: prop,
+          ...obj,
+        })
   })
 }
-
-// fetcher({ autoParse: true }).get()
