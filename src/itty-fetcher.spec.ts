@@ -50,7 +50,7 @@ describe('fetcher', () => {
       })
 
       it('if set to false, leaves Response intact as Promise return', async () => {
-        const response = await fetcher({ autoParse: false }).get(URL_JSON)
+        const response: object = await fetcher({ autoParse: false }).get(URL_JSON)
 
         expect(response.constructor.name).toBe('Response')
       })
@@ -69,7 +69,7 @@ describe('fetcher', () => {
     })
 
     it('can access a property of the response data', async () => {
-      const response = await fetcher().get(URL_JSON)
+      const response: string[] = await fetcher().get(URL_JSON)
 
       expect(response[0]).toBe(JSON_RESPONSE[0])
     })
@@ -88,6 +88,13 @@ describe('fetcher', () => {
       const response = await fetcher().get(URL_STRING)
 
       expect(response).toBe(STRING_RESPONSE)
+    })
+
+    it('will honor TS Type definitions for response payloads', async () => {
+      type ArrayOfNumbers = number[]
+      const response = await fetcher().get<ArrayOfNumbers>(URL_JSON)
+
+      expect(response).toEqual(JSON_RESPONSE)
     })
   })
 })
