@@ -15,8 +15,10 @@ Super lightweight (~500 bytes) wrapper to simplify native fetch calls using comm
 ## Features
 - Fully typed/TypeScript support
 - Automatically parses responses (optional)
-- Automatically stringifies object payloads
+- Automatically serializes object payloads
 - Accepts *any* HTTP method (including user-defined)
+- 404, 400, 500, errors actually throw to allow easier catching
+- still allows any native fetch options (including headers, etc) to be sent
 
 ## Simple Usage
 ```js
