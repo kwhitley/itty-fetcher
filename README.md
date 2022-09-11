@@ -1,4 +1,4 @@
-# ![itty-fetcher](https://user-images.githubusercontent.com/865416/175660491-4f428e41-47f5-4d43-92d3-02ce29309878.png)
+# ![itty-fetcher](https://user-images.githubusercontent.com/865416/189512292-3d877e9b-5ae6-4ccb-aba6-9602ee5a7578.png)
 
 [![npm package][npm-image]][npm-url]
 ![Build Status](https://github.com/kwhitley/itty-router/actions/workflows/verify.yml/badge.svg)
