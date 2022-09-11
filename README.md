@@ -51,6 +51,20 @@ api
   })
 ```
 
+## Why yet another fetching library?
+We've all done this, countless times in our apps... we want to make a nice, lightweight app that (of-course) talks to some API.  We could import a typical fetch helper library, but they're typically huge and overkill, plus we want to keep our bundle size down, right?
+
+So we just write some basic native fetch statements.  That's not hard... we've tread this ground before! Of course as the project grows a bit, we start to become bothered by the repeated boilerplate of setting headers, checking for errors, translating response bodies, etc.
+
+So what do we do?
+
+Why, we write a little abstraction layer of course!  Just like this one, but probably a bit bigger.
+
+## So who is this for?
+This is not a kitchen-sink sort of library.  It will intentionally **not** cover every edge case.  By only handling a variety of the **most common** use-cases, I can keep the bundle size down to [likely] smaller than the code you would have written yourself, making it a no-brainer for easy inclusion into your projects.
+
+Need more advanced fetch handling?  Perhaps try a different library (or stick to native fetch and handle the edge case manually)!
+
 ## ADVANCED USAGE
 ```js
 // skipping autoParse returns full Response control
