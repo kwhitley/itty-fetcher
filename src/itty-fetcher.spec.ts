@@ -1,9 +1,22 @@
 import 'isomorphic-fetch'
-import fetchMock from 'fetch-mock'
+import fetchMock from 'fetch-mock-jest'
 import { fetcher } from './itty-fetcher'
 
-const EXAMPLE_BASE = '/root'
+// DEFINE MOCKS
+const URL_JSON = 'https://foo.bar/json'
+const URL_STRING = 'https://foo.bar/string'
+const URL_ERROR = 'https://foo.bar/error'
 
+const JSON_RESPONSE = [ 'apple', 'bat', 'cat']
+const STRING_RESPONSE = 'https://foo.bar/string'
+const ERROR_RESPONSE = 400
+
+fetchMock
+  .get(URL_JSON, JSON_RESPONSE)
+  .get(URL_STRING, STRING_RESPONSE)
+  .get(URL_ERROR, ERROR_RESPONSE)
+
+// BEGIN TESTS
 describe('fetcher', () => {
   const defaults = fetcher()
 
@@ -16,10 +29,12 @@ describe('fetcher', () => {
       it('defaults to \'\'', () => {
         expect (defaults.base).toBe('')
       })
-      it('properly extends fetcher', () => {
-        const api = fetcher({ base: EXAMPLE_BASE })
 
-        expect (api.base).toBe(EXAMPLE_BASE)
+      it('properly extends fetcher', () => {
+        const base = 'https://foo.bar.baz/v1'
+        const api = fetcher({ base })
+
+        expect (api.base).toBe(base)
       })
     })
 
@@ -35,7 +50,7 @@ describe('fetcher', () => {
       })
 
       it('if set to false, leaves Response intact as Promise return', async () => {
-        const response = await fetcher({ autoParse: false }).get('https://api.itty.cards/v1/projects')
+        const response = await fetcher({ autoParse: false }).get(URL_JSON)
 
         expect(response.constructor.name).toBe('Response')
       })
@@ -48,31 +63,31 @@ describe('fetcher', () => {
     })
 
     it('returns object data directly from requests', async () => {
-      const response = await fetcher().get('https://api.itty.cards/v1/projects')
+      const response = await fetcher().get(URL_JSON)
 
-      expect(response.constructor.name).toBe('Object')
+      expect(response).toEqual(JSON_RESPONSE)
     })
 
     it('can access a property of the response data', async () => {
-      const response = await fetcher().get('https://api.itty.cards/v1/projects')
+      const response = await fetcher().get(URL_JSON)
 
-      expect(typeof response.njwR).toBe('object')
+      expect(response[0]).toBe(JSON_RESPONSE[0])
     })
 
     it('will safely catch non-OK Responses', async () => {
       const errorHandler = jest.fn()
 
       const response = await fetcher()
-                                .get('https://api.itty.cards/v1/proj')
+                                .get(URL_ERROR)
                                 .catch(errorHandler)
 
       expect(errorHandler).toHaveBeenCalled()
     })
 
     it('will autoparse to text if no json headers found in response', async () => {
-      const response = await fetcher().get('https://api.itty.cards/v1')
+      const response = await fetcher().get(URL_STRING)
 
-      expect(response.constructor.name).toBe('String')
+      expect(response).toBe(STRING_RESPONSE)
     })
   })
 })
