@@ -1,7 +1,9 @@
 # ![itty-fetcher](https://user-images.githubusercontent.com/865416/189512292-3d877e9b-5ae6-4ccb-aba6-9602ee5a7578.png)
 
 [![npm package][npm-image]][npm-url]
+[![minified + gzipped size][gzip-image]][gzip-url]
 ![Build Status](https://github.com/kwhitley/itty-router/actions/workflows/verify.yml/badge.svg)
+[![Coverage Status][coveralls-image]][coveralls-url]
 [![Open Issues][issues-image]][issues-url]
 <a href="https://github.com/kwhitley/itty-fetcher" target="\_parent">
   <img alt="" src="https://img.shields.io/github/stars/kwhitley/itty-fetcher.svg?style=social&label=Star" />
