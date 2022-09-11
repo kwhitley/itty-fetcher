@@ -1,6 +1,6 @@
 import 'isomorphic-fetch'
 import fetchMock from 'fetch-mock'
-import { fetcher } from './itty-fetch'
+import { fetcher } from './itty-fetcher'
 
 const EXAMPLE_BASE = '/root'
 
