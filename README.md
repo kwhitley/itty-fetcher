@@ -12,7 +12,7 @@
   <img alt="" src="https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow" />
 </a>
 
-Super lightweight (~500 bytes) wrapper to simplify native fetch calls using common HTTP methods.
+Super lightweight (~450 bytes) wrapper to simplify native fetch calls using common HTTP methods.
 
 ## Features
 - Fully typed/TypeScript support
@@ -54,7 +54,9 @@ api
 ```
 
 ## Why yet another fetching library?
-We've all done this, countless times in our apps... we want to make a nice, lightweight app that (of-course) talks to some API.  We could import a typical fetch helper library, but they're typically huge and overkill, plus we want to keep our bundle size down, right?
+We've all done this countless times in our apps... 
+
+We want to make a nice, lightweight app that (of-course) talks to some API.  We could import a typical fetch helper library, but they're typically huge and overkill, plus we want to keep our bundle size down, right?
 
 So we just write some basic native fetch statements.  That's not hard... we've tread this ground before! Of course as the project grows a bit, we start to become bothered by the repeated boilerplate of setting headers, checking for errors, translating response bodies, etc.
 
