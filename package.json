@@ -1,5 +1,5 @@
 {
-  "name": "itty-fetcherer",
+  "name": "itty-fetcher",
   "version": "0.0.0",
   "description": "An even simpler wrapper around native Fetch to strip boilerplate from your fetching code.",
   "sourceType": "module",
