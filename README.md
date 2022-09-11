@@ -12,7 +12,7 @@
   <img alt="" src="https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow" />
 </a>
 
-Super lightweight (~450 bytes) wrapper to simplify native fetch calls using common HTTP methods.
+Super lightweight (~450 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
 
 ## Features
 - Fully typed/TypeScript support
