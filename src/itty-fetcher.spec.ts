@@ -3,6 +3,7 @@ import fetchMock from 'fetch-mock-jest'
 import { fetcher } from './itty-fetcher'
 
 // DEFINE MOCKS
+const URL_BASE = 'https://foo.bar/'
 const URL_JSON = 'https://foo.bar/json'
 const URL_STRING = 'https://foo.bar/string'
 const URL_ERROR = 'https://foo.bar/error'
@@ -27,14 +28,21 @@ describe('fetcher', () => {
   describe('config options', () => {
     describe('base', () => {
       it('defaults to \'\'', () => {
-        expect (defaults.base).toBe('')
+        expect(defaults.base).toBe('')
       })
 
       it('properly extends fetcher', () => {
-        const base = 'https://foo.bar.baz/v1'
-        const api = fetcher({ base })
+        const api = fetcher({ base: URL_BASE })
 
-        expect (api.base).toBe(base)
+        expect(api.base).toBe(URL_BASE)
+      })
+
+      it('properly prepends future fetch calls', async () => {
+        const api = fetcher({ base: URL_BASE })
+
+        const response = await api.get('json')
+
+        expect(response).toEqual(JSON_RESPONSE)
       })
     })
 
@@ -46,7 +54,7 @@ describe('fetcher', () => {
       it('properly extends fetcher', () => {
         const api = fetcher({ autoParse: false })
 
-        expect (api.autoParse).toBe(false)
+        expect(api.autoParse).toBe(false)
       })
 
       it('if set to false, leaves Response intact as Promise return', async () => {
