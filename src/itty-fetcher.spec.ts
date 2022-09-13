@@ -70,7 +70,7 @@ describe('fetcher', () => {
     })
   })
 
-  describe('HTTP method calls', () => {
+  describe('HTTP method calls - fetcher().get(url, payload?, options?)', () => {
     it('any other property returns a function', () => {
       expect(typeof defaults.foo).toBe('function')
     })
@@ -109,17 +109,17 @@ describe('fetcher', () => {
 
       expect(response).toEqual(JSON_RESPONSE)
     })
-  })
 
-  describe('HTTP method calls (native fetch options)', () => {
-    it('will still embed content-type header if headers are included in fetch options', async () => {
-      const response = await fetcher().patch(URL_JSON, {}, {
-        headers: {
-          Authorization: 'Bearer of.good.news',
-        }
+    describe('options (use native fetch options)', () => {
+      it('will still embed content-type header if headers are included in fetch options', async () => {
+        const response = await fetcher().patch(URL_JSON, {}, {
+          headers: {
+            Authorization: 'Bearer of.good.news',
+          }
+        })
+
+        expect(response).toEqual(JSON_RESPONSE)
       })
-
-      expect(response).toEqual(JSON_RESPONSE)
     })
   })
 })

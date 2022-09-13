@@ -47,12 +47,12 @@ const fetchy = (options: FetchyOptions): FetchyFunction => (
 
   return fetch(base + url, {
     method: method.toUpperCase(),
+    ...fetchOptions,
     headers: {
       'Content-Type': 'application/json',
       ...fetchOptions?.headers,
     },
     body: JSON.stringify(payload),
-    ...fetchOptions,
   })
   .then(response => {
     if (response.ok) {
