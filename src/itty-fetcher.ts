@@ -8,11 +8,11 @@ interface FetcherOptions {
   autoParse: boolean,
 }
 
-type FetchyFunction = (
+type FetchyFunction = <T>(
   url: string,
   payload?: string | number | object | undefined | FormData,
   options?: object | undefined
-) => Promise<any>
+) => Promise<T>
 
 type FetchTraps = {
   [key: string]: FetchyFunction
