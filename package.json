@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "An even simpler wrapper around native Fetch to strip boilerplate from your fetching code.",
   "sourceType": "module",
   "main": "./dist/itty-fetcher.js",
