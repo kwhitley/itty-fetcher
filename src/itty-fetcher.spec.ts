@@ -16,6 +16,11 @@ fetchMock
   .get(URL_JSON, JSON_RESPONSE)
   .get(URL_STRING, STRING_RESPONSE)
   .get(URL_ERROR, ERROR_RESPONSE)
+  .patch(URL_JSON, JSON_RESPONSE, {
+    headers: {
+      'content-type': 'application/json',
+    }
+  })
 
 // BEGIN TESTS
 describe('fetcher', () => {
@@ -65,7 +70,7 @@ describe('fetcher', () => {
     })
   })
 
-  describe('HTTP method calls', () => {
+  describe('HTTP method calls - fetcher().get(url, payload?, options?)', () => {
     it('any other property returns a function', () => {
       expect(typeof defaults.foo).toBe('function')
     })
@@ -103,6 +108,18 @@ describe('fetcher', () => {
       const response = await fetcher().get<ArrayOfNumbers>(URL_JSON)
 
       expect(response).toEqual(JSON_RESPONSE)
+    })
+
+    describe('options (use native fetch options)', () => {
+      it('will still embed content-type header if headers are included in fetch options', async () => {
+        const response = await fetcher().patch(URL_JSON, {}, {
+          headers: {
+            Authorization: 'Bearer of.good.news',
+          }
+        })
+
+        expect(response).toEqual(JSON_RESPONSE)
+      })
     })
   })
 })
