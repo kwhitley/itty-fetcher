@@ -8,11 +8,11 @@ interface FetcherOptions {
   autoParse: boolean,
 }
 
-type FetchyFunction = <T>(
+type FetchyFunction = (
   url: string,
   payload?: string | number | object | undefined | FormData,
   options?: object | undefined
-) => Promise<T>
+) => Promise<any>
 
 type FetchTraps = {
   [key: string]: FetchyFunction
@@ -52,7 +52,7 @@ const fetchy = (options: FetchyOptions): FetchyFunction => (
       ...fetchOptions?.headers,
     },
     body: JSON.stringify(payload),
-    ...fetchOptions
+    ...fetchOptions,
   })
   .then(response => {
     if (response.ok) {

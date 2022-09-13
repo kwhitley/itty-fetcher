@@ -16,6 +16,11 @@ fetchMock
   .get(URL_JSON, JSON_RESPONSE)
   .get(URL_STRING, STRING_RESPONSE)
   .get(URL_ERROR, ERROR_RESPONSE)
+  .patch(URL_JSON, JSON_RESPONSE, {
+    headers: {
+      'content-type': 'application/json',
+    }
+  })
 
 // BEGIN TESTS
 describe('fetcher', () => {
@@ -101,6 +106,18 @@ describe('fetcher', () => {
     it('will honor TS Type definitions for response payloads', async () => {
       type ArrayOfNumbers = number[]
       const response = await fetcher().get<ArrayOfNumbers>(URL_JSON)
+
+      expect(response).toEqual(JSON_RESPONSE)
+    })
+  })
+
+  describe('HTTP method calls (native fetch options)', () => {
+    it('will still embed content-type header if headers are included in fetch options', async () => {
+      const response = await fetcher().patch(URL_JSON, {}, {
+        headers: {
+          Authorization: 'Bearer of.good.news',
+        }
+      })
 
       expect(response).toEqual(JSON_RESPONSE)
     })
