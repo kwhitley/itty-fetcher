@@ -1,16 +1,16 @@
 # ![itty-fetcher](https://user-images.githubusercontent.com/865416/189512292-3d877e9b-5ae6-4ccb-aba6-9602ee5a7578.png)
 
-[![npm package][npm-image]][npm-url]
-[![minified + gzipped size][gzip-image]][gzip-url]
-![Build Status](https://github.com/kwhitley/itty-router/actions/workflows/verify.yml/badge.svg)
-[![Coverage Status][coveralls-image]][coveralls-url]
-[![Open Issues][issues-image]][issues-url]
-<a href="https://github.com/kwhitley/itty-fetcher" target="\_parent">
-  <img alt="" src="https://img.shields.io/github/stars/kwhitley/itty-fetcher.svg?style=social&label=Star" />
-</a>
-<a href="https://twitter.com/kevinrwhitley" target="\_parent">
-  <img alt="" src="https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow" />
-</a>
+[![Version](https://img.shields.io/npm/v/itty-fetcher.svg?style=flat-square)](https://npmjs.com/package/itty-fetcher)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/itty-fetcher?style=flat-square)](https://bundlephobia.com/result?p=itty-fetcher)
+![Build Status](https://img.shields.io/github/workflow/status/kwhitley/itty-fetcher/build?style=flat-square)
+[![Coverage Status](https://img.shields.io/coveralls/github/kwhitley/itty-fetcher/v0.x?style=flat-square)](https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x)
+[![NPM Weekly Downloads](https://img.shields.io/npm/dw/itty-fetcher?style=flat-square)](https://npmjs.com/package/itty-fetcher)
+[![Open Issues](https://img.shields.io/github/issues/kwhitley/itty-fetcher?style=flat-square)](https://github.com/kwhitley/itty-fetcher/issues)
+
+[![Discord](https://img.shields.io/discord/832353585802903572?style=flat-square)](https://discord.com/channels/832353585802903572)
+[![GitHub Repo stars](https://img.shields.io/github/stars/kwhitley/itty-fetcher?style=social)](https://github.com/kwhitley/itty-fetcher)
+[![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
+
 
 Super lightweight (~450 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
 
