@@ -12,7 +12,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
 
 
-Super lightweight (~570 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
+Super lightweight (~560 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
 
 ## Features
 - Fully typed/TypeScript support
