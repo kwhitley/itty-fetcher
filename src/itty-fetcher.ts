@@ -56,7 +56,7 @@ const fetchy = (options: FetchyOptions): FetchyFunction => (
   }
 
   return fetch(resolvedURL.toString(), {
-    method: method.toUpperCase(),
+    method,
     ...fetchOptions,
     headers: {
       'Content-Type': 'application/json',
