@@ -112,22 +112,46 @@ describe('fetcher', () => {
       expect(response).toEqual(JSON_RESPONSE)
     })
 
-    it('passes data for GET requests into query params', async () => {
-      const url = 'https://google.com'
-      const data = { foo: 'hello world!', baz: 10, biz: true, }
+    describe('GET', () => {
+      it('passes data into query params', async () => {
+        const url = 'https://google.com'
+        const data = { foo: 'hello world!', baz: 10, biz: true, bop: ["a", "b"] }
 
-      const expected = new URL(url)
-      for (const [key, val] of Object.entries(data)) {
-        expected.searchParams.set(key, String(val))
-      }
+        const expected = new URL(url)
+        for (const [key,val] of Object.entries(data)) {
+         expected.searchParams.set(key, String(val)) 
+        }
 
-      const mock = fetchMock.get(expected.toString(), data)
+        const mock = fetchMock.get(expected.toString(), data)
 
-      await fetcher().get(url, data)
+        await fetcher().get(url, data)
 
-      const [uri, init] = mock.calls()[0]
-      expect(uri).toEqual(expected.toString())
-      expect(init?.body).toBeUndefined()
+        const [uri, init] = mock.calls()[0]
+        expect(uri).toEqual(expected.toString())
+        expect(init?.body).toBeUndefined()
+      })
+
+      it('can pass in custom URLSearchParams', async () => {
+        const url = 'https://google.com'
+        const data = { foo: 'hello world!', baz: 10, biz: true,bop: ["a", "b"] }
+        const params = new URLSearchParams()
+        params.set('foo', data.foo)
+        params.set('baz', String(data.baz))
+        params.set('biz', String(data.biz))
+        params.append('bop', data.bop[0])
+        params.append('bop', data.bop[1])
+
+        const expected = new URL(url)
+        expected.search = params.toString()
+
+        const mock = fetchMock.get(expected.toString(), [])
+
+        await fetcher().get(url, params)
+
+        const [uri, init] = mock.calls()[0]
+        expect(uri).toEqual(expected.toString())
+        expect(init?.body).toBeUndefined()
+      })
     })
 
     describe('options (use native fetch options)', () => {
