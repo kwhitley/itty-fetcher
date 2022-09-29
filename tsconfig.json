@@ -20,7 +20,6 @@
     "skipLibCheck": true,
     "strict": false,
     "traceResolution": false,
-    "types": ["@types/jest"],
     "module": "esnext",
     "outDir": "dist/mjs",
     "target": "esnext"
