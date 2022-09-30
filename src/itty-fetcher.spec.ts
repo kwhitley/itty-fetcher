@@ -112,6 +112,16 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/', headers: { A: 'a', B: 'b' } },
       },
+      'replace the origin of a request': {
+        options: {
+          base,
+          transformRequest: (req) => {
+            req.url = req.url.replace('foo.com', 'bar.com')
+            return req
+          },
+        },
+        expected: { url: 'https://bar.com/' },
+      },
     }
 
     for (const [name, t] of Object.entries(tests)) {
