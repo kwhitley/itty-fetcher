@@ -25,7 +25,7 @@ describe('fetcher', () => {
         },
       })
   })
-  
+
   const defaults = fetcher()
 
   it('default import is a function', () => {
@@ -113,13 +113,14 @@ describe('fetcher', () => {
     })
 
     describe('GET', () => {
-      it('passes data into query params', async () => {
-        const url = 'https://google.com'
-        const data = { foo: 'hello world!', baz: 10, biz: true, bop: ["a", "b"] }
+      const data = { foo: 'hello world!', baz: 10, biz: true, bop: ["a", "b"] }
+      const url = 'https://google.com'
 
+      it('passes data into query params', async () => {
         const expected = new URL(url)
+
         for (const [key,val] of Object.entries(data)) {
-         expected.searchParams.set(key, String(val)) 
+         expected.searchParams.set(key, String(val))
         }
 
         const mock = fetchMock.get(expected.toString(), data)
@@ -132,8 +133,6 @@ describe('fetcher', () => {
       })
 
       it('can pass in custom URLSearchParams', async () => {
-        const url = 'https://google.com'
-        const data = { foo: 'hello world!', baz: 10, biz: true,bop: ["a", "b"] }
         const params = new URLSearchParams()
         params.set('foo', data.foo)
         params.set('baz', String(data.baz))

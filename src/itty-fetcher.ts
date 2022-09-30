@@ -46,11 +46,11 @@ const fetchy = (options: FetchyOptions): FetchyFunction => (
    * If the request is a `.get(...)` then we want to pass the payload
    * to the URL as query params as passing data in the body is not
    * allowed for GET requests.
-   * 
+   *
    * If the user passes in a URLSearchParams object, we'll use that,
-   * otherwise we will create a new URLSearchParams object from the payload 
+   * otherwise we will create a new URLSearchParams object from the payload
    * and pass that in.
-   * 
+   *
    * We clear the payload after this so that it doesn't get passed to the body.
    */
   if (method === 'GET' && payload && typeof payload === 'object') {
