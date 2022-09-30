@@ -35,53 +35,41 @@ describe('fetcher', () => {
         payload?: any
         init?: RequestInit
         url?: string
-        options: FetcherOptions
+        transformRequest: FetcherOptions['transformRequest']
         expected: any
       }
     > = {
       'can set a header on request (no path)': {
-        options: {
-          base,
-          transformRequest: (req) => {
-            req.headers['Foo'] = 'bar'
-            return req
-          },
+        transformRequest: (req) => {
+          req.headers['Foo'] = 'bar'
+          return req
         },
         expected: { url: base + '/', headers: { Foo: 'bar' } },
       },
       'can set a header on request (with path)': {
-        options: {
-          base,
-          transformRequest: (req) => {
-            req.headers['Foo'] = 'bar'
-            return req
-          },
+        transformRequest: (req) => {
+          req.headers['Foo'] = 'bar'
+          return req
         },
         url: '/foo',
         expected: { url: base + '/foo', headers: { Foo: 'bar' } },
       },
       'can add a query param to the URL': {
-        options: {
-          base,
-          transformRequest: (req) => {
-            const url = new URL(req.url)
-            url.searchParams.set('message', 'hello world')
-            req.url = url.toString()
-            return req
-          },
+        transformRequest: (req) => {
+          const url = new URL(req.url)
+          url.searchParams.set('message', 'hello world')
+          req.url = url.toString()
+          return req
         },
         expected: { url: base + '/?message=hello+world' },
       },
       'combines query params from the URL and the payload (object)': {
         payload: { foo: 10 },
-        options: {
-          base,
-          transformRequest: (req) => {
-            const url = new URL(req.url)
-            url.searchParams.set('message', 'hello world')
-            req.url = url.toString()
-            return req
-          },
+        transformRequest: (req) => {
+          const url = new URL(req.url)
+          url.searchParams.set('message', 'hello world')
+          req.url = url.toString()
+          return req
         },
         expected: { url: base + '/?foo=10&message=hello+world' },
       },
@@ -90,35 +78,26 @@ describe('fetcher', () => {
           ['foo', '10'],
           ['bar', '20'],
         ]),
-        options: {
-          base,
-          transformRequest: (req) => {
-            const url = new URL(req.url)
-            url.searchParams.set('message', 'hello world')
-            req.url = url.toString()
-            return req
-          },
+        transformRequest: (req) => {
+          const url = new URL(req.url)
+          url.searchParams.set('message', 'hello world')
+          req.url = url.toString()
+          return req
         },
         expected: { url: base + '/?foo=10&bar=20&message=hello+world' },
       },
       'combines default headers with request headers': {
         init: { headers: { B: 'b' } },
-        options: {
-          base,
-          transformRequest: (req) => {
-            req.headers['A'] = 'a'
-            return req
-          },
+        transformRequest: (req) => {
+          req.headers['A'] = 'a'
+          return req
         },
         expected: { url: base + '/', headers: { A: 'a', B: 'b' } },
       },
       'replace the origin of a request': {
-        options: {
-          base,
-          transformRequest: (req) => {
-            req.url = req.url.replace('foo.com', 'bar.com')
-            return req
-          },
+        transformRequest: (req) => {
+          req.url = req.url.replace('foo.com', 'bar.com')
+          return req
         },
         expected: { url: 'https://bar.com/' },
       },
@@ -128,7 +107,11 @@ describe('fetcher', () => {
       it(name, async () => {
         const mock = fetchMock.get(t.expected.url, {})
 
-        await fetcher(t.options).get(t?.url ?? '', t?.payload, t?.init)
+        await fetcher({ base, transformRequest: t.transformRequest }).get(
+          t?.url ?? '',
+          t?.payload,
+          t?.init,
+        )
 
         const [url, options] = mock.calls()[0]
 
