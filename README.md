@@ -12,7 +12,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
 
 
-Super lightweight (~490 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
+Tiny (~490 bytes) wrapper to simplify native `fetch` calls using *any* HTTP method (existing or imagined).
 
 ## Features
 - Fully typed/TypeScript support
@@ -33,21 +33,25 @@ const basics = fetcher()
 await basics.get('https://api.kittens.com/v1/names/?max=2') // ['Fluffy', 'Mittens']
 
 // set a base for simplifying repeated calls
-const api = fetcher({ base: 'https://api.kittens.com/v1/' })
+const api = fetcher({ base: 'https://api.kittens.com/v1' })
 
 // then use it... base will be prepended to urls
-await api.get('names/?max=2') // ['Fluffy', 'Mittens']
+await api.get('/names/?max=2') // ['Fluffy', 'Mittens']
 
 // automatic handle sending payloads (no need to stringify and set headers)
-await api.post('create-a-cat', { name: 'Halsey', age: 3 }) // { id: 'Q4AW', name: 'Halsey', age: 3 }
+await api.post('/create-a-cat', { name: 'Halsey', age: 3 }) // { id: 'Q4AW', name: 'Halsey', age: 3 }
 
 // use any conceivable HTTP method
-api.put('kitten/13', { name: 'Different Cat' }) // sends using PUT method
-api.foo('kitten/13', { name: 'Different Cat' }) // sends using FOO method
+api.put('/kitten/13', { name: 'Different Cat' }) // sends using PUT method
+api.foo('/kitten/13', { name: 'Different Cat' }) // sends using FOO method
+
+// supports GET query params
+await api.get('/names', { max: 2, foo: ['bar', 'baz'] }) 
+// GET https://api.kittens.com/v1/names?max=2&foo=bar&foo=baz
 
 // ERROR HANDLING: 400, 404, 500, etc will actually throw, allowing an easy catch
 api
-  .get('not-a-valid-path')
+  .get('/not-a-valid-path')
   .catch(({ status, message }) => {
     console.log('received a status', status, 'error with message:', message)
   })
@@ -94,12 +98,6 @@ fetcher()
   )
 ```
 
-## Installation
-
-```
-npm install itty-fetcher
-```
-
 # API
 
 ### `fetcher(options?: FetcherOptions): FetcherType`
@@ -109,6 +107,21 @@ Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped t
 | --- | --- | --- | --- |
 | **autoParse** | `boolean` | true | By default, all responses are parsed to JSON/text/etc.  To access the Response directly, set this to false.
 | **base** | `string` | '' | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('kittens/14')` to work by automatically prepending the base URL.
+
+Each method call maps to the corresponding HTTP method (in uppercase) with the following signature:
+
+### `fetcher().{method}(url, payload, options)`
+#### Example
+```js
+fetcher().patch('https://foo.bar', { value: 2 })
+// sends PATCH to https://foo.bar with payload of { value: 2 }
+```
+
+| Parameter | Type(s) | Required? | Description |
+| --- | --- | --- | --- |
+| **url** | `string` | yes | This will be appended to the `fetcher.base` option (if found) to make the request
+| **payload** | `string`, `number`, `object`, `any[]`, `URLSearchParams` | no* | This will be attached to the request body (or sent as query params for GET requests).  If using options, this param spot should be retained with `undefined`.
+| **options** | `object` | no | These are native fetch options to be sent along with the request, and will be merged with options created internally.
 
 ---
 
