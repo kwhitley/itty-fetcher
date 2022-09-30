@@ -1,16 +1,20 @@
-interface FetcherOverrides {
-  base?: string
-  autoParse?: boolean
+type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
+
+type RequestLike = WithRequired<RequestInit, 'method' | 'headers'> & {
+  url: string
 }
 
-interface FetcherOptions {
-  base: string
-  autoParse: boolean
+export type RequestPayload = string | number | object | any[] | FormData | undefined
+
+export interface FetcherOptions {
+  base?: string
+  autoParse?: boolean
+  transformRequest?: (request: RequestLike) => RequestLike
 }
 
 type FetchyFunction = <T>(
   url: string,
-  payload?: string | number | object | undefined | FormData,
+  payload?: RequestPayload,
   options?: object | undefined,
 ) => Promise<T>
 
@@ -31,9 +35,8 @@ type FetchyOptions = {
 
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
-  (url: string, payload?: string | number | object | undefined, fetchOptions?: RequestInit) => {
+  (url_or_path: string, payload?: RequestPayload, fetchOptions?: RequestInit) => {
     const method = options.method.toUpperCase()
-    let search = ''
 
     /**
      * If the request is a `.get(...)` then we want to pass the payload
@@ -46,16 +49,21 @@ const fetchy =
      *
      * We clear the payload after this so that it doesn't get passed to the body.
      */
+    let search = ''
     if (method === 'GET' && payload && typeof payload === 'object') {
-      search = '?' + (
-        payload instanceof URLSearchParams
+      search =
+        '?' +
+        (payload instanceof URLSearchParams
           ? payload
           : new URLSearchParams(payload as Record<string, string>)
-      ).toString()
+        ).toString()
       payload = undefined
     }
 
-    return fetch((options.base || '') + url + search, {
+    const full_url = (options.base || '') + url_or_path + search
+
+    let req: RequestLike = {
+      url: full_url,
       method,
       ...fetchOptions,
       headers: {
@@ -63,7 +71,18 @@ const fetchy =
         ...fetchOptions?.headers,
       },
       body: JSON.stringify(payload),
-    }).then((response) => {
+    }
+
+    /**
+     * Transform the outgoing request if a transformRequest function is provided
+     * in the options. This allows the user to modify the request before it is
+     * sent.
+     */
+    if (options.transformRequest) req = options.transformRequest(req)
+
+    const { url, ...init } = req
+
+    return fetch(url, init).then((response) => {
       if (response.ok) {
         if (!options.autoParse) return response
 
@@ -76,7 +95,7 @@ const fetchy =
     })
   }
 
-export function fetcher(fetcherOptions?: FetcherOverrides) {
+export function fetcher(fetcherOptions?: FetcherOptions) {
   return <FetcherType>new Proxy(
     {
       base: '',

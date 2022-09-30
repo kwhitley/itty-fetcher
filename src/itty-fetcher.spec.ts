@@ -1,7 +1,7 @@
-import 'isomorphic-fetch'
 import fetchMock from 'fetch-mock'
-import { fetcher } from './itty-fetcher'
+import 'isomorphic-fetch'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fetcher, FetcherOptions } from './itty-fetcher'
 
 // DEFINE MOCKS
 const URL_BASE = 'https://foo.bar/'
@@ -12,6 +12,8 @@ const URL_ERROR = 'https://foo.bar/error'
 const JSON_RESPONSE = ['apple', 'bat', 'cat']
 const STRING_RESPONSE = 'https://foo.bar/string'
 const ERROR_RESPONSE = 400
+
+const defaults = fetcher()
 
 describe('fetcher', () => {
   beforeEach(() => {
@@ -25,7 +27,123 @@ describe('fetcher', () => {
       })
   })
 
-  const defaults = fetcher()
+  describe('transformRequest', () => {
+    const base = 'https://foo.com'
+    const tests: {
+      name: string
+      method: string
+      payload?: any
+      init?: RequestInit
+      url?: string
+      options: FetcherOptions
+      expected: any
+    }[] = [
+      {
+        name: 'can set a header on request (no path)',
+        method: 'get',
+        options: {
+          base,
+          transformRequest: (req) => {
+            req.headers['Foo'] = 'bar'
+            return req
+          },
+        },
+        expected: { url: base + '/', headers: { Foo: 'bar' } },
+      },
+      {
+        name: 'can set a header on request (with path)',
+        method: 'get',
+        options: {
+          base,
+          transformRequest: (req) => {
+            req.headers['Foo'] = 'bar'
+            return req
+          },
+        },
+        url: '/foo',
+        expected: { url: base + '/foo', headers: { Foo: 'bar' } },
+      },
+      {
+        name: 'can add a query param to the URL',
+        method: 'get',
+        options: {
+          base,
+          transformRequest: (req) => {
+            const url = new URL(req.url)
+            url.searchParams.set('message', 'hello world')
+            req.url = url.toString()
+            return req
+          },
+        },
+        expected: { url: base + '/?message=hello+world' },
+      },
+      {
+        method: 'get',
+        name: 'combines query params from the URL and the payload (object)',
+        payload: { foo: 10 },
+        options: {
+          base,
+          transformRequest: (req) => {
+            const url = new URL(req.url)
+            url.searchParams.set('message', 'hello world')
+            req.url = url.toString()
+            return req
+          },
+        },
+        expected: { url: base + '/?foo=10&message=hello+world' },
+      },
+      {
+        method: 'get',
+        name: 'combines query params from the URL and the payload (URLSearchParams)',
+        payload: new URLSearchParams([
+          ['foo', '10'],
+          ['bar', '20'],
+        ]),
+        options: {
+          base,
+          transformRequest: (req) => {
+            const url = new URL(req.url)
+            url.searchParams.set('message', 'hello world')
+            req.url = url.toString()
+            return req
+          },
+        },
+        expected: { url: base + '/?foo=10&bar=20&message=hello+world' },
+      },
+      {
+        method: 'get',
+        name: 'combines default headers with request headers',
+        init: { headers: { B: 'b' } },
+        options: {
+          base,
+          transformRequest: (req) => {
+            req.headers['A'] = 'a'
+            return req
+          },
+        },
+        expected: { url: base + '/', headers: { A: 'a', B: 'b' } },
+      },
+    ]
+
+    for (const t of tests) {
+      it(t.name, async () => {
+        const mock = fetchMock[t.method](t.expected.url, {})
+
+        await fetcher(t.options)[t.method](t?.url ?? '', t?.payload, t?.init)
+
+        const [url, options] = mock.calls()[0]
+
+        expect(url).toEqual(t.expected.url)
+        expect(options?.headers).toHaveProperty('Content-Type', 'application/json')
+
+        if (t.expected?.headers) {
+          for (const [key, val] of Object.entries(t.expected.headers)) {
+            expect(options?.headers).toHaveProperty(key, val)
+          }
+        }
+      })
+    }
+  })
 
   it('default import is a function', () => {
     expect(typeof fetcher).toBe('function')
