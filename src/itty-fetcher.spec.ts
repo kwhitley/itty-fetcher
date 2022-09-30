@@ -1,6 +1,7 @@
 import 'isomorphic-fetch'
-import fetchMock from 'fetch-mock-jest'
+import fetchMock from 'fetch-mock'
 import { fetcher } from './itty-fetcher'
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // DEFINE MOCKS
 const URL_BASE = 'https://foo.bar/'
@@ -20,9 +21,7 @@ describe('fetcher', () => {
       .get(URL_STRING, STRING_RESPONSE)
       .get(URL_ERROR, ERROR_RESPONSE)
       .patch(URL_JSON, JSON_RESPONSE, {
-        headers: {
-          'content-type': 'application/json',
-        },
+        headers: { 'content-type': 'application/json' },
       })
   })
 
@@ -90,11 +89,9 @@ describe('fetcher', () => {
     })
 
     it('will safely catch non-OK Responses', async () => {
-      const errorHandler = jest.fn()
+      const errorHandler = vi.fn()
 
-      await fetcher()
-              .get(URL_ERROR)
-              .catch(errorHandler)
+      await fetcher().get(URL_ERROR).catch(errorHandler)
 
       expect(errorHandler).toHaveBeenCalled()
     })
@@ -157,9 +154,7 @@ describe('fetcher', () => {
     describe('options (use native fetch options)', () => {
       it('will still embed content-type header if headers are included in fetch options', async () => {
         const response = await fetcher().patch(URL_JSON, {}, {
-          headers: {
-            Authorization: 'Bearer of.good.news',
-          }
+          headers: { Authorization: 'Bearer of.good.news' }
         })
 
         expect(response).toEqual(JSON_RESPONSE)
