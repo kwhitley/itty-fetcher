@@ -29,15 +29,10 @@ type FetchyOptions = {
   method: string,
 } & FetcherOptions
 
-type FetchOptions = {
-  headers?: HeadersInit,
-  [key: string]: string | boolean | object,
-}
-
 const fetchy = (options: FetchyOptions): FetchyFunction => (
   url: string,
   payload?: string | number | object | undefined,
-  fetchOptions?: FetchOptions,
+  fetchOptions?: RequestInit,
 ) => {
   const {
     base,
