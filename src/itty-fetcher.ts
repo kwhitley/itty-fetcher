@@ -34,14 +34,33 @@ const fetchy = (options: FetchyOptions): FetchyFunction => (
   payload?: string | number | object | undefined,
   fetchOptions?: RequestInit,
 ) => {
-  const {
-    base,
-    autoParse,
-    method,
-  } = options
+  const method = options.method.toUpperCase()
+  const resolvedURL = new URL(options.base + url)
 
-  return fetch(base + url, {
-    method: method.toUpperCase(),
+  /**
+   * If the request is a `.get(...)` then we want to pass the payload
+   * to the URL as query params as passing data in the body is not
+   * allowed for GET requests.
+   * 
+   * If the user passes in a URLSearchParams object, we'll use that,
+   * otherwise we will create a new URLSearchParams object from the payload 
+   * and pass that in.
+   * 
+   * We clear the payload after this so that it doesn't get passed to the body.
+   */
+  if (method === 'GET' && payload && typeof payload === 'object') {
+    resolvedURL.search = (
+      payload instanceof URLSearchParams
+          ? payload
+          : new URLSearchParams(
+            payload as Record<string, string>
+          )
+    ).toString()
+    payload = undefined
+  }
+
+  return fetch(resolvedURL.toString(), {
+    method,
     ...fetchOptions,
     headers: {
       'Content-Type': 'application/json',
@@ -51,7 +70,7 @@ const fetchy = (options: FetchyOptions): FetchyFunction => (
   })
   .then(response => {
     if (response.ok) {
-      if (!autoParse) return response
+      if (!options.autoParse) return response
 
       const contentType = response.headers.get('content-type')
 
