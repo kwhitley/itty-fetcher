@@ -129,3 +129,8 @@ Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped t
 
 ## Special Thanks
 I have to thank my friends and colleagues that helped me through the idea itself, implementation details, and importantly... made it possible for me to muck through making this a TS-first library.  Huge thanks for that!!
+
+## Contributors
+As always, these are the real heroes!
+
+[@danawoodman](https://github.com/danawoodman)
