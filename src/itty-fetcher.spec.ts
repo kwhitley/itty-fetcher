@@ -25,7 +25,7 @@ describe('fetcher', () => {
         },
       })
   })
-  
+
   const defaults = fetcher()
 
   it('default import is a function', () => {
@@ -92,9 +92,9 @@ describe('fetcher', () => {
     it('will safely catch non-OK Responses', async () => {
       const errorHandler = jest.fn()
 
-      const response = await fetcher()
-                                .get(URL_ERROR)
-                                .catch(errorHandler)
+      await fetcher()
+              .get(URL_ERROR)
+              .catch(errorHandler)
 
       expect(errorHandler).toHaveBeenCalled()
     })
@@ -119,7 +119,7 @@ describe('fetcher', () => {
 
         const expected = new URL(url)
         for (const [key,val] of Object.entries(data)) {
-         expected.searchParams.set(key, String(val)) 
+         expected.searchParams.set(key, String(val))
         }
 
         const mock = fetchMock.get(expected.toString(), data)
