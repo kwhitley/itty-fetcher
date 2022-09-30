@@ -12,7 +12,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
 
 
-Super lightweight (~590 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
+Super lightweight (~490 bytes) wrapper to simplify native fetch calls using *any* HTTP method (existing or imagined).
 
 ## Features
 - Fully typed/TypeScript support
@@ -108,7 +108,7 @@ Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped t
 | Option | Type(s) | Default | Description |
 | --- | --- | --- | --- |
 | **autoParse** | `boolean` | true | By default, all responses are parsed to JSON/text/etc.  To access the Response directly, set this to false.
-| **base** | `string` | '' | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('/kittens/14')` to work by automatically prepending the base URL.
+| **base** | `string` | '' | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('kittens/14')` to work by automatically prepending the base URL.
 
 ---
 
