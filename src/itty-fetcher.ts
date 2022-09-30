@@ -33,7 +33,7 @@ const fetchy =
   (options: FetchyOptions): FetchyFunction =>
   (url: string, payload?: string | number | object | undefined, fetchOptions?: RequestInit) => {
     const method = options.method.toUpperCase()
-    const resolvedURL = new URL(options.base + url)
+    let search = ''
 
     /**
      * If the request is a `.get(...)` then we want to pass the payload
@@ -47,7 +47,7 @@ const fetchy =
      * We clear the payload after this so that it doesn't get passed to the body.
      */
     if (method === 'GET' && payload && typeof payload === 'object') {
-      resolvedURL.search = (
+      search = '?' + (
         payload instanceof URLSearchParams
           ? payload
           : new URLSearchParams(payload as Record<string, string>)
@@ -55,7 +55,7 @@ const fetchy =
       payload = undefined
     }
 
-    return fetch(resolvedURL.toString(), {
+    return fetch((options.base || '') + url + search, {
       method,
       ...fetchOptions,
       headers: {
