@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "An even simpler wrapper around native Fetch to strip boilerplate from your fetching code.",
   "sourceType": "module",
   "main": "./dist/itty-fetcher.js",
@@ -28,7 +28,7 @@
     "prebuild": "rimraf dist && mkdir dist",
     "build": "tsup src/itty-fetcher.ts --format cjs,esm --minify --dts --clean",
     "prepublishOnly": "yarn build",
-    "release": "release --tag --push"
+    "release": "release --tag --push --patch"
   },
   "keywords": [
     "fetch",
