@@ -1,7 +1,7 @@
 import 'isomorphic-fetch'
 import fetchMock from 'fetch-mock'
 import { fetcher } from './itty-fetcher'
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // DEFINE MOCKS
 const URL_BASE = 'https://foo.bar/'
@@ -9,7 +9,7 @@ const URL_JSON = 'https://foo.bar/json'
 const URL_STRING = 'https://foo.bar/string'
 const URL_ERROR = 'https://foo.bar/error'
 
-const JSON_RESPONSE = [ 'apple', 'bat', 'cat']
+const JSON_RESPONSE = ['apple', 'bat', 'cat']
 const STRING_RESPONSE = 'https://foo.bar/string'
 const ERROR_RESPONSE = 400
 
@@ -33,7 +33,7 @@ describe('fetcher', () => {
 
   describe('config options', () => {
     describe('base', () => {
-      it('defaults to \'\'', () => {
+      it("defaults to ''", () => {
         expect(defaults.base).toBe('')
       })
 
@@ -54,7 +54,7 @@ describe('fetcher', () => {
 
     describe('autoParse', () => {
       it('defaults to true', () => {
-        expect (defaults.autoParse).toBe(true)
+        expect(defaults.autoParse).toBe(true)
       })
 
       it('properly extends fetcher', () => {
@@ -112,11 +112,11 @@ describe('fetcher', () => {
     describe('GET', () => {
       it('passes data into query params', async () => {
         const url = 'https://google.com'
-        const data = { foo: 'hello world!', baz: 10, biz: true, bop: ["a", "b"] }
+        const data = { foo: 'hello world!', baz: 10, biz: true, bop: ['a', 'b'] }
 
         const expected = new URL(url)
-        for (const [key,val] of Object.entries(data)) {
-         expected.searchParams.set(key, String(val))
+        for (const [key, val] of Object.entries(data)) {
+          expected.searchParams.set(key, String(val))
         }
 
         const mock = fetchMock.get(expected.toString(), data)
@@ -130,7 +130,7 @@ describe('fetcher', () => {
 
       it('can pass in custom URLSearchParams', async () => {
         const url = 'https://google.com'
-        const data = { foo: 'hello world!', baz: 10, biz: true,bop: ["a", "b"] }
+        const data = { foo: 'hello world!', baz: 10, biz: true, bop: ['a', 'b'] }
         const params = new URLSearchParams()
         params.set('foo', data.foo)
         params.set('baz', String(data.baz))
@@ -153,9 +153,13 @@ describe('fetcher', () => {
 
     describe('options (use native fetch options)', () => {
       it('will still embed content-type header if headers are included in fetch options', async () => {
-        const response = await fetcher().patch(URL_JSON, {}, {
-          headers: { Authorization: 'Bearer of.good.news' }
-        })
+        const response = await fetcher().patch(
+          URL_JSON,
+          {},
+          {
+            headers: { Authorization: 'Bearer of.good.news' },
+          },
+        )
 
         expect(response).toEqual(JSON_RESPONSE)
       })
