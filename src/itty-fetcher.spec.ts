@@ -29,18 +29,17 @@ describe('fetcher', () => {
 
   describe('transformRequest', () => {
     const base = 'https://foo.com'
-    const tests: {
-      name: string
-      method: string
-      payload?: any
-      init?: RequestInit
-      url?: string
-      options: FetcherOptions
-      expected: any
-    }[] = [
+    const tests: Record<
+      string,
       {
-        name: 'can set a header on request (no path)',
-        method: 'get',
+        payload?: any
+        init?: RequestInit
+        url?: string
+        options: FetcherOptions
+        expected: any
+      }
+    > = {
+      'can set a header on request (no path)': {
         options: {
           base,
           transformRequest: (req) => {
@@ -50,9 +49,7 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/', headers: { Foo: 'bar' } },
       },
-      {
-        name: 'can set a header on request (with path)',
-        method: 'get',
+      'can set a header on request (with path)': {
         options: {
           base,
           transformRequest: (req) => {
@@ -63,9 +60,7 @@ describe('fetcher', () => {
         url: '/foo',
         expected: { url: base + '/foo', headers: { Foo: 'bar' } },
       },
-      {
-        name: 'can add a query param to the URL',
-        method: 'get',
+      'can add a query param to the URL': {
         options: {
           base,
           transformRequest: (req) => {
@@ -77,9 +72,7 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/?message=hello+world' },
       },
-      {
-        method: 'get',
-        name: 'combines query params from the URL and the payload (object)',
+      'combines query params from the URL and the payload (object)': {
         payload: { foo: 10 },
         options: {
           base,
@@ -92,9 +85,7 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/?foo=10&message=hello+world' },
       },
-      {
-        method: 'get',
-        name: 'combines query params from the URL and the payload (URLSearchParams)',
+      'combines query params from the URL and the payload (URLSearchParams)': {
         payload: new URLSearchParams([
           ['foo', '10'],
           ['bar', '20'],
@@ -110,9 +101,7 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/?foo=10&bar=20&message=hello+world' },
       },
-      {
-        method: 'get',
-        name: 'combines default headers with request headers',
+      'combines default headers with request headers': {
         init: { headers: { B: 'b' } },
         options: {
           base,
@@ -123,13 +112,13 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/', headers: { A: 'a', B: 'b' } },
       },
-    ]
+    }
 
-    for (const t of tests) {
-      it(t.name, async () => {
-        const mock = fetchMock[t.method](t.expected.url, {})
+    for (const [name, t] of Object.entries(tests)) {
+      it(name, async () => {
+        const mock = fetchMock.get(t.expected.url, {})
 
-        await fetcher(t.options)[t.method](t?.url ?? '', t?.payload, t?.init)
+        await fetcher(t.options).get(t?.url ?? '', t?.payload, t?.init)
 
         const [url, options] = mock.calls()[0]
 
