@@ -40,14 +40,14 @@ describe('fetcher', () => {
       }
     > = {
       'can set a header on request (no path)': {
-        transformRequest: (req) => {
+        transformRequest(req) {
           req.headers['Foo'] = 'bar'
           return req
         },
         expected: { url: base + '/', headers: { Foo: 'bar' } },
       },
       'can set a header on request (with path)': {
-        transformRequest: (req) => {
+        transformRequest(req) {
           req.headers['Foo'] = 'bar'
           return req
         },
@@ -55,7 +55,7 @@ describe('fetcher', () => {
         expected: { url: base + '/foo', headers: { Foo: 'bar' } },
       },
       'can add a query param to the URL': {
-        transformRequest: (req) => {
+        transformRequest(req) {
           const url = new URL(req.url)
           url.searchParams.set('message', 'hello world')
           req.url = url.toString()
@@ -65,7 +65,7 @@ describe('fetcher', () => {
       },
       'combines query params from the URL and the payload (object)': {
         payload: { foo: 10 },
-        transformRequest: (req) => {
+        transformRequest(req) {
           const url = new URL(req.url)
           url.searchParams.set('message', 'hello world')
           req.url = url.toString()
@@ -78,7 +78,7 @@ describe('fetcher', () => {
           ['foo', '10'],
           ['bar', '20'],
         ]),
-        transformRequest: (req) => {
+        transformRequest(req) {
           const url = new URL(req.url)
           url.searchParams.set('message', 'hello world')
           req.url = url.toString()
@@ -88,14 +88,14 @@ describe('fetcher', () => {
       },
       'combines default headers with request headers': {
         init: { headers: { B: 'b' } },
-        transformRequest: (req) => {
+        transformRequest(req) {
           req.headers['A'] = 'a'
           return req
         },
         expected: { url: base + '/', headers: { A: 'a', B: 'b' } },
       },
       'replace the origin of a request': {
-        transformRequest: (req) => {
+        transformRequest(req) {
           req.url = req.url.replace('foo.com', 'bar.com')
           return req
         },
