@@ -11,7 +11,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/kwhitley/itty-fetcher?style=social)](https://github.com/kwhitley/itty-fetcher)
 [![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
 
-Tiny (~490 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP method (existing or imagined).
+Tiny (~550 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP method (existing or imagined).
 
 ## Features
 
@@ -227,18 +227,3 @@ I have to thank my friends and colleagues that helped me through the idea itself
 As always, these are the real heroes!
 
 [@danawoodman](https://github.com/danawoodman)
-
-[twitter-image]: https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fitty-fetcher
-[logo-image]: https://user-images.githubusercontent.com/865416/114285361-2bd3e180-9a1c-11eb-8386-a2e9f4383d43.png
-[gzip-image]: https://img.shields.io/bundlephobia/minzip/itty-fetcher
-[gzip-url]: https://bundlephobia.com/result?p=itty-fetcher
-[issues-image]: https://img.shields.io/github/issues/kwhitley/itty-fetcher
-[issues-url]: https://github.com/kwhitley/itty-fetcher/issues
-[npm-image]: https://img.shields.io/npm/v/itty-fetcher.svg
-[npm-url]: http://npmjs.org/package/itty-fetcher
-[travis-image]: https://travis-ci.org/kwhitley/itty-fetcher.svg?branch=v0.x
-[travis-url]: https://travis-ci.org/kwhitley/itty-fetcher
-[david-image]: https://david-dm.org/kwhitley/itty-fetcher/status.svg
-[david-url]: https://david-dm.org/kwhitley/itty-fetcher
-[coveralls-image]: https://coveralls.io/repos/github/kwhitley/itty-fetcher/badge.svg?branch=v0.x
-[coveralls-url]: https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x
