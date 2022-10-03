@@ -11,18 +11,19 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/kwhitley/itty-fetcher?style=social)](https://github.com/kwhitley/itty-fetcher)
 [![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
 
-
-Tiny (~490 bytes) wrapper to simplify native `fetch` calls using *any* HTTP method (existing or imagined).
+Tiny (~490 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP method (existing or imagined).
 
 ## Features
+
 - Fully typed/TypeScript support
 - Automatically parses responses (optional)
 - Automatically serializes object payloads
-- Accepts *any* HTTP method (including user-defined)
+- Accepts _any_ HTTP method (including user-defined)
 - 404, 400, 500, errors actually throw to allow easier catching
 - still allows any native fetch options (including headers, etc) to be sent
 
 ## Simple Usage
+
 ```js
 import { fetcher } from 'itty-fetcher'
 
@@ -46,104 +47,198 @@ api.put('/kitten/13', { name: 'Different Cat' }) // sends using PUT method
 api.foo('/kitten/13', { name: 'Different Cat' }) // sends using FOO method
 
 // supports GET query params
-await api.get('/names', { max: 2, foo: ['bar', 'baz'] }) 
+await api.get('/names', { max: 2, foo: ['bar', 'baz'] })
 // GET https://api.kittens.com/v1/names?max=2&foo=bar&foo=baz
 
 // ERROR HANDLING: 400, 404, 500, etc will actually throw, allowing an easy catch
-api
-  .get('/not-a-valid-path')
-  .catch(({ status, message }) => {
-    console.log('received a status', status, 'error with message:', message)
-  })
+api.get('/not-a-valid-path').catch(({ status, message }) => {
+  console.log('received a status', status, 'error with message:', message)
+})
 ```
 
 ## Why yet another fetching library?
+
 We've all done this countless times in our apps...
 
-We want to make a nice, lightweight app that (of-course) talks to some API.  We could import a full-featured fetch library like axios, but we want to keep our bundle size down, right?
+We want to make a nice, lightweight app that (of-course) talks to some API. We could import a full-featured fetch library like axios, but we want to keep our bundle size down, right?
 
-So we just write some basic native fetch statements.  That's not hard... we've tread this ground before! Of course as the project grows a bit, we start to become bothered by the repeated boilerplate of setting headers, checking for errors, translating response bodies, etc.
+So we just write some basic native fetch statements. That's not hard... we've tread this ground before! Of course as the project grows a bit, we start to become bothered by the repeated boilerplate of setting headers, checking for errors, translating response bodies, etc.
 
 So what do we do?
 
-Why, we write a little abstraction layer of course!  Just like this one, but probably a bit bigger.
+Why, we write a little abstraction layer of course! Just like this one, but probably a bit bigger.
 
 ## So who is this for?
-This is not a kitchen-sink sort of library.  It will intentionally **not** cover every edge case.  By only handling a variety of the **most common** use-cases, I can keep the bundle size down to [likely] smaller than the code you would have written yourself, making it a no-brainer for easy inclusion into your projects.
 
-Need more advanced fetch handling?  Perhaps try a different library (or stick to native fetch and handle the edge case manually)!
+This is not a kitchen-sink sort of library. It will intentionally **not** cover every edge case. By only handling a variety of the **most common** use-cases, I can keep the bundle size down to [likely] smaller than the code you would have written yourself, making it a no-brainer for easy inclusion into your projects.
+
+Need more advanced fetch handling? Perhaps try a different library (or stick to native fetch and handle the edge case manually)!
 
 ## ADVANCED USAGE
+
 ```js
 // skipping autoParse returns full Response control
 const unparsed = fetcher({ autoParse: false })
 
-unparsed
-  .get('https://api.kittens.com/v1/names/?max=2')
-  .then(response => {
-    if (response.ok) return response.json()
-  })
+unparsed.get('https://api.kittens.com/v1/names/?max=2').then((response) => {
+  if (response.ok) return response.json()
+})
 
 // can send all native fetch options through in 3rd param
-fetcher()
-  .post('https://api.kittens.com/v1/names/?max=2',
-        { payload: 'is second param' },
-        {
-          credentials: 'same-origin',
-          cache: 'no-cache',
-          headers: {
-            ['my-fancy-header']: 'will be sent'
-          }
-        }
-  )
+fetcher().post(
+  'https://api.kittens.com/v1/names/?max=2',
+  { payload: 'is second param' },
+  {
+    credentials: 'same-origin',
+    cache: 'no-cache',
+    headers: {
+      ['my-fancy-header']: 'will be sent',
+    },
+  },
+)
 ```
 
 # API
 
 ### `fetcher(options?: FetcherOptions): FetcherType`
+
 Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped to fetch commands.
 
-| Option | Type(s) | Default | Description |
-| --- | --- | --- | --- |
-| **autoParse** | `boolean` | true | By default, all responses are parsed to JSON/text/etc.  To access the Response directly, set this to false.
-| **base** | `string` | '' | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('kittens/14')` to work by automatically prepending the base URL.
+| Option               | Type(s)                                 | Default                | Description                                                                                                                                                                                                                                |
+| -------------------- | --------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **autoParse**        | `boolean`                               | `true`                 | By default, all responses are parsed to JSON/text/etc. To access the Response directly, set this to false.                                                                                                                                 |
+| **base**             | `string`                                | `''` (an empty string) | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('/kittens/14')` to work by automatically prepending the base URL.                                    |
+| **transformRequest** | `(request: RequestLike) => RequestLike` | `undefined`            | An optional method that allows for transforming a request before it is sent. This is useful for adding headers, etc. The method is passed the request object, and should return the request object (or a new one). See below for examples. |
+
+`RequestLike` matches the following signature:
+
+```ts
+type RequestLike = RequestInit & {
+  method: string // method is required
+  headers: HeadersInit // headers are populated with { 'Content-Type': 'application/json' } if not set
+  url: string // url is required and is the fully qualified URL
+}
+```
+
+#### `transformRequest` examples
+
+```ts
+// Add a header to every request
+fetcher({
+  transformRequest(req) {
+    req.headers['Authorization'] = token
+    return req
+  },
+})
+```
+
+```ts
+// Add a query param to every request
+fetcher({
+  transformRequest(req) {
+    const url = new URL(req.url)
+    url.searchParams.set('message', 'hello world')
+    req.url = url.toString()
+    return req
+  },
+})
+```
+
+```ts
+// Only add a header on a "/admin" route
+fetcher({
+  transformRequest(req) {
+    const url = new URL(req.url)
+    if (url.pathname.startsWith('/admin')) {
+      req.headers['Authorization'] = token
+    }
+    return req
+  },
+})
+```
+
+```ts
+// Change the origin of a URL only in dev mode
+fetcher({
+  transformRequest(req) {
+    if (dev) {
+      req.url = req.url.replace('prod.example.com', 'dev.example.com')
+    }
+    return req
+  },
+})
+```
+
+```ts
+// Only apply a token on a specific domain
+fetcher({
+  transformRequest(req) {
+    if (req.url.startsWith("https://api.example.com") {
+      req.headers["Authorization"] = `Bearer ${token}`
+    }
+    return req
+  }
+})
+```
+
+```ts
+// Util function to inject a user auth token into a request
+function api_client(token: string) {
+  return fetcher({
+    base: 'https://api.example.com',
+    transformRequest(req) {
+      req.headers['Authorization'] = token
+      return req
+    },
+  })
+}
+
+// Somewhere else...
+const token = read_jwt(jwt_cookie)
+const api = api_client(token)
+api.get('/foo')
+```
+
+### `fetcher().{method}(url, payload, options)`
 
 Each method call maps to the corresponding HTTP method (in uppercase) with the following signature:
 
-### `fetcher().{method}(url, payload, options)`
 #### Example
+
 ```js
 fetcher().patch('https://foo.bar', { value: 2 })
 // sends PATCH to https://foo.bar with payload of { value: 2 }
 ```
 
-| Parameter | Type(s) | Required? | Description |
-| --- | --- | --- | --- |
-| **url** | `string` | yes | This will be appended to the `fetcher.base` option (if found) to make the request
-| **payload** | `string`, `number`, `object`, `any[]`, `URLSearchParams` | no* | This will be attached to the request body (or sent as query params for GET requests).  If using options, this param spot should be retained with `undefined`.
-| **options** | `object` | no | These are native fetch options to be sent along with the request, and will be merged with options created internally.
+| Parameter   | Type(s)                                                  | Required? | Description                                                                                                                                                  |
+| ----------- | -------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **url**     | `string`                                                 | yes       | This will be appended to the `fetcher.base` option (if found) to make the request                                                                            |
+| **payload** | `string`, `number`, `object`, `any[]`, `URLSearchParams` | no\*      | This will be attached to the request body (or sent as query params for GET requests). If using options, this param spot should be retained with `undefined`. |
+| **options** | `object`                                                 | no        | These are native fetch options to be sent along with the request, and will be merged with options created internally.                                        |
 
 ---
 
-[twitter-image]:https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fitty-fetcher
-[logo-image]:https://user-images.githubusercontent.com/865416/114285361-2bd3e180-9a1c-11eb-8386-a2e9f4383d43.png
-[gzip-image]:https://img.shields.io/bundlephobia/minzip/itty-fetcher
-[gzip-url]:https://bundlephobia.com/result?p=itty-fetcher
-[issues-image]:https://img.shields.io/github/issues/kwhitley/itty-fetcher
-[issues-url]:https://github.com/kwhitley/itty-fetcher/issues
-[npm-image]:https://img.shields.io/npm/v/itty-fetcher.svg
-[npm-url]:http://npmjs.org/package/itty-fetcher
-[travis-image]:https://travis-ci.org/kwhitley/itty-fetcher.svg?branch=v0.x
-[travis-url]:https://travis-ci.org/kwhitley/itty-fetcher
-[david-image]:https://david-dm.org/kwhitley/itty-fetcher/status.svg
-[david-url]:https://david-dm.org/kwhitley/itty-fetcher
-[coveralls-image]:https://coveralls.io/repos/github/kwhitley/itty-fetcher/badge.svg?branch=v0.x
-[coveralls-url]:https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x
-
 ## Special Thanks
-I have to thank my friends and colleagues that helped me through the idea itself, implementation details, and importantly... made it possible for me to muck through making this a TS-first library.  Huge thanks for that!!
+
+I have to thank my friends and colleagues that helped me through the idea itself, implementation details, and importantly... made it possible for me to muck through making this a TS-first library. Huge thanks for that!!
 
 ## Contributors
+
 As always, these are the real heroes!
 
 [@danawoodman](https://github.com/danawoodman)
+
+[twitter-image]: https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fitty-fetcher
+[logo-image]: https://user-images.githubusercontent.com/865416/114285361-2bd3e180-9a1c-11eb-8386-a2e9f4383d43.png
+[gzip-image]: https://img.shields.io/bundlephobia/minzip/itty-fetcher
+[gzip-url]: https://bundlephobia.com/result?p=itty-fetcher
+[issues-image]: https://img.shields.io/github/issues/kwhitley/itty-fetcher
+[issues-url]: https://github.com/kwhitley/itty-fetcher/issues
+[npm-image]: https://img.shields.io/npm/v/itty-fetcher.svg
+[npm-url]: http://npmjs.org/package/itty-fetcher
+[travis-image]: https://travis-ci.org/kwhitley/itty-fetcher.svg?branch=v0.x
+[travis-url]: https://travis-ci.org/kwhitley/itty-fetcher
+[david-image]: https://david-dm.org/kwhitley/itty-fetcher/status.svg
+[david-url]: https://david-dm.org/kwhitley/itty-fetcher
+[coveralls-image]: https://coveralls.io/repos/github/kwhitley/itty-fetcher/badge.svg?branch=v0.x
+[coveralls-url]: https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x

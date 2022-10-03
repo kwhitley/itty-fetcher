@@ -1,7 +1,7 @@
-import 'isomorphic-fetch'
 import fetchMock from 'fetch-mock'
-import { fetcher } from './itty-fetcher'
+import 'isomorphic-fetch'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fetcher, FetcherOptions } from './itty-fetcher'
 
 // DEFINE MOCKS
 const URL_BASE = 'https://foo.bar/'
@@ -12,6 +12,8 @@ const URL_ERROR = 'https://foo.bar/error'
 const JSON_RESPONSE = ['apple', 'bat', 'cat']
 const STRING_RESPONSE = 'https://foo.bar/string'
 const ERROR_RESPONSE = 400
+
+const defaults = fetcher()
 
 describe('fetcher', () => {
   beforeEach(() => {
@@ -24,8 +26,6 @@ describe('fetcher', () => {
         headers: { 'content-type': 'application/json' },
       })
   })
-
-  const defaults = fetcher()
 
   it('default import is a function', () => {
     expect(typeof fetcher).toBe('function')
@@ -68,6 +68,106 @@ describe('fetcher', () => {
 
         expect(response.constructor.name).toBe('Response')
       })
+    })
+
+    describe('transformRequest', () => {
+      const base = 'https://foo.com'
+      const tests: Record<
+        string,
+        {
+          payload?: any
+          init?: RequestInit
+          url?: string
+          transformRequest: FetcherOptions['transformRequest']
+          expected: any
+        }
+      > = {
+        'can set a header on request (no path)': {
+          transformRequest(req) {
+            req.headers['Foo'] = 'bar'
+            return req
+          },
+          expected: { url: base + '/', headers: { Foo: 'bar' } },
+        },
+        'can set a header on request (with path)': {
+          transformRequest(req) {
+            req.headers['Foo'] = 'bar'
+            return req
+          },
+          url: '/foo',
+          expected: { url: base + '/foo', headers: { Foo: 'bar' } },
+        },
+        'can add a query param to the URL': {
+          transformRequest(req) {
+            const url = new URL(req.url)
+            url.searchParams.set('message', 'hello world')
+            req.url = url.toString()
+            return req
+          },
+          expected: { url: base + '/?message=hello+world' },
+        },
+        'combines query params from the URL and the payload (object)': {
+          payload: { foo: 10 },
+          transformRequest(req) {
+            const url = new URL(req.url)
+            url.searchParams.set('message', 'hello world')
+            req.url = url.toString()
+            return req
+          },
+          expected: { url: base + '/?foo=10&message=hello+world' },
+        },
+        'combines query params from the URL and the payload (URLSearchParams)': {
+          payload: new URLSearchParams([
+            ['foo', '10'],
+            ['bar', '20'],
+          ]),
+          transformRequest(req) {
+            const url = new URL(req.url)
+            url.searchParams.set('message', 'hello world')
+            req.url = url.toString()
+            return req
+          },
+          expected: { url: base + '/?foo=10&bar=20&message=hello+world' },
+        },
+        'combines default headers with request headers': {
+          init: { headers: { B: 'b' } },
+          transformRequest(req) {
+            req.headers['A'] = 'a'
+            return req
+          },
+          expected: { url: base + '/', headers: { A: 'a', B: 'b' } },
+        },
+        'replace the origin of a request': {
+          transformRequest(req) {
+            req.url = req.url.replace('foo.com', 'bar.com')
+            return req
+          },
+          expected: { url: 'https://bar.com/' },
+        },
+      }
+
+      for (const [name, t] of Object.entries(tests)) {
+        it(name, async () => {
+          const mock = fetchMock.get(t.expected.url, {})
+
+          await fetcher({ base, transformRequest: t.transformRequest }).get(
+            t?.url ?? '',
+            t?.payload,
+            t?.init,
+          )
+
+          const [url, options] = mock.calls()[0]
+
+          expect(url).toEqual(t.expected.url)
+          expect(options?.headers).toHaveProperty('Content-Type', 'application/json')
+
+          if (t.expected?.headers) {
+            for (const [key, val] of Object.entries(t.expected.headers)) {
+              expect(options?.headers).toHaveProperty(key, val)
+            }
+          }
+        })
+      }
     })
   })
 
