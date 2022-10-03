@@ -110,6 +110,16 @@ Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped t
 | **base**             | `string`                                | `''` (an empty string) | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('kittens/14')` to work by automatically prepending the base URL.                                     |
 | **transformRequest** | `(request: RequestLike) => RequestLike` | `undefined`            | An optional method that allows for transforming a request before it is sent. This is useful for adding headers, etc. The method is passed the request object, and should return the request object (or a new one). See below for examples. |
 
+`RequestLike` matches the following signature:
+
+```ts
+type RequestLike = RequestInit & {
+  method: string // method is required
+  headers: HeadersInit // headers are populated with { 'Content-Type': 'application/json' } if not set
+  url: string // url is required and is the fully qualified URL
+}
+```
+
 #### `transformRequest` examples
 
 ```ts
