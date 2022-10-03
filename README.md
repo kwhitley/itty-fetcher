@@ -20,7 +20,7 @@ Tiny (~550 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP meth
 - Automatically serializes object payloads
 - Accepts _any_ HTTP method (including user-defined)
 - 404, 400, 500, errors actually throw to allow easier catching
-- still allows any native fetch options (including headers, etc) to be sent
+- Still allows any native fetch options (including headers, etc) to be sent
 
 ## Simple Usage
 
@@ -226,4 +226,4 @@ I have to thank my friends and colleagues that helped me through the idea itself
 
 As always, these are the real heroes!
 
-[@danawoodman](https://github.com/danawoodman)
+[@danawoodman](https://github.com/danawoodman) - For a truly amazing amount of work with me on this project, including (but not limited to) build improvements, testing improvements, query param (GET) support, and the *incredibly* powerful `transformRequest` feature, which unlocks future plugin support potential!  Huge thanks, Dana!! :)
