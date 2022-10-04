@@ -70,7 +70,7 @@ const fetchy =
         'Content-Type': 'application/json',
         ...fetchOptions?.headers,
       },
-      body: JSON.stringify(payload),
+      body: payload instanceof FormData ? payload : JSON.stringify(payload),
     }
 
     /**
