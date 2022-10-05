@@ -74,7 +74,13 @@ This is not a kitchen-sink sort of library. It will intentionally **not** cover 
 
 Need more advanced fetch handling? Perhaps try a different library (or stick to native fetch and handle the edge case manually)!
 
-## ADVANCED USAGE
+## Notes
+
+itty-fetcher wraps the existing native `fetch` method, so it will work in any environment that supports `fetch` (including modern web browsers, Cloudflare Workers/Pages, SvelteKit, and Node v18+). Note that we depend on web APIs including `Request`, `FormData` and `URL`. Almost all environments that support `fetch` will also support these APIs, but if you need to support older browsers or other environements, you may need to include a polyfill. Note if you're using Node you need to be running v18 or newer.
+
+Want to use itty-fetecher in your SvelteKit `load` functions while using the `fetch` implementation passed in via `load`? Check out [this example by Rich Harris](https://twitter.com/Rich_Harris/status/1577375645977362432) of how to do it.
+
+## Advanced usage
 
 ```js
 // skipping autoParse returns full Response control
@@ -226,4 +232,4 @@ I have to thank my friends and colleagues that helped me through the idea itself
 
 As always, these are the real heroes!
 
-[@danawoodman](https://github.com/danawoodman) - For a truly amazing amount of work with me on this project, including (but not limited to) build improvements, testing improvements, query param (GET) support, and the *incredibly* powerful `transformRequest` feature, which unlocks future plugin support potential!  Huge thanks, Dana!! :)
+[@danawoodman](https://github.com/danawoodman) - For a truly amazing amount of work with me on this project, including (but not limited to) build improvements, testing improvements, query param (GET) support, and the _incredibly_ powerful `transformRequest` feature, which unlocks future plugin support potential! Huge thanks, Dana!! :)

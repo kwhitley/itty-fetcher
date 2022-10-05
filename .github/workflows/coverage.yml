@@ -1,26 +1,24 @@
-on: ["push", "pull_request_target"]
+on: ['push', 'pull_request_target']
 
 name: Test Coveralls
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
 
-    - uses: actions/checkout@v1
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
 
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 16.x
-
-    - name: npm install, make test-coverage
-      run: |
-        yarn
-        yarn test
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: npm install, make test-coverage
+        run: |
+          yarn
+          yarn test
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
