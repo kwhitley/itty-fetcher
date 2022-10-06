@@ -46,7 +46,11 @@ describe('fetcher', () => {
       it('can pass in a custom fetch implementation', () => {
         const custom_fetch = vi.fn().mockResolvedValue(new Response('works!')) as typeof fetch
         fetcher({ fetch: custom_fetch }).get('/foo')
-        expect(custom_fetch).toBeCalled()
+        expect(custom_fetch).toBeCalledWith('/foo', {
+          method: 'GET',
+          body: undefined,
+          headers: { 'Content-Type': 'application/json' },
+        })
       })
     })
   })

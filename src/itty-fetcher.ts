@@ -10,7 +10,7 @@ export interface FetcherOptions {
   base?: string
   autoParse?: boolean
   transformRequest?: (request: RequestLike) => RequestLike
-  fetch: typeof fetch
+  fetch?: typeof fetch
 }
 
 type FetchyFunction = <T>(
