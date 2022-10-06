@@ -115,6 +115,7 @@ Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped t
 | **autoParse**        | `boolean`                               | `true`                 | By default, all responses are parsed to JSON/text/etc. To access the Response directly, set this to false.                                                                                                                                 |
 | **base**             | `string`                                | `''` (an empty string) | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('/kittens/14')` to work by automatically prepending the base URL.                                    |
 | **transformRequest** | `(request: RequestLike) => RequestLike` | `undefined`            | An optional method that allows for transforming a request before it is sent. This is useful for adding headers, etc. The method is passed the request object, and should return the request object (or a new one). See below for examples. |
+| **fetch**            | `typeof fetch`                          | `undefined`            | An optional implementation of `fetch` that will be used instead of the built-in `fetch` on all requests. This is useful when your may need to work with a modified version of fetch, like SvelteKit's `load` function.                     |
 
 `RequestLike` matches the following signature:
 

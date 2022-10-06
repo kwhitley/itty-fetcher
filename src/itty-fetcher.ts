@@ -10,6 +10,7 @@ export interface FetcherOptions {
   base?: string
   autoParse?: boolean
   transformRequest?: (request: RequestLike) => RequestLike
+  fetch: typeof fetch
 }
 
 type FetchyFunction = <T>(
@@ -82,7 +83,9 @@ const fetchy =
 
     const { url, ...init } = req
 
-    return fetch(url, init).then((response) => {
+    const f = typeof options?.fetch === 'function' ? options.fetch : fetch
+
+    return f(url, init).then((response) => {
       if (response.ok) {
         if (!options.autoParse) return response
 

@@ -1,6 +1,6 @@
 import fetchMock from 'fetch-mock'
 import 'isomorphic-fetch'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetcher, FetcherOptions, RequestPayload } from './itty-fetcher'
 
 describe('fetcher', () => {
@@ -39,6 +39,14 @@ describe('fetcher', () => {
         fetchMock.get('/', {})
         const response: object = await fetcher({ autoParse: false }).get('/')
         expect(response.constructor.name).toBe('Response')
+      })
+    })
+
+    describe('fetch', () => {
+      it('can pass in a custom fetch implementation', () => {
+        const custom_fetch = vi.fn().mockResolvedValue(new Response('works!')) as typeof fetch
+        fetcher({ fetch: custom_fetch }).get('/foo')
+        expect(custom_fetch).toBeCalled()
       })
     })
   })
