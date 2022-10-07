@@ -1,7 +1,11 @@
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-type RequestLike = WithRequired<RequestInit, 'method' | 'headers'> & {
+type RequestLike = WithRequired<RequestInit, 'method'> & {
+  headers: Record<string, string>
   url: string
+}
+type FetchOptions = Omit<RequestInit, 'headers'> & {
+  headers?: Record<string, string>
 }
 
 export type RequestPayload = string | number | object | any[] | FormData | undefined
@@ -36,7 +40,7 @@ type FetchyOptions = {
 
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
-  (url_or_path: string, payload?: RequestPayload, fetchOptions?: RequestInit) => {
+  (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
     const method = options.method.toUpperCase()
 
     /**
