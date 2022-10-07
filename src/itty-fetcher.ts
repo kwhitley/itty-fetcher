@@ -1,6 +1,7 @@
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-type RequestLike = WithRequired<RequestInit, 'method' | 'headers'> & {
+type RequestLike = WithRequired<RequestInit, 'method'> & {
+  headers: Record<string, string>
   url: string
 }
 
