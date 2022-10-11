@@ -1,10 +1,10 @@
-import fetch_mock from 'fetch-mock'
+import fetchMock from 'fetch-mock'
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest'
 import { fetcher, FetcherOptions, RequestPayload } from './itty-fetcher'
 
 describe('fetcher', () => {
   beforeEach(() => {
-    fetch_mock.reset()
+    fetchMock.reset()
     vi.clearAllMocks()
   })
 
@@ -36,7 +36,7 @@ describe('fetcher', () => {
       })
 
       it('if set to false, leaves Response intact as Promise return', async () => {
-        fetch_mock.get('/', {})
+        fetchMock.get('/', {})
         const response: object = await fetcher({ autoParse: false }).get('/')
         expect(response.constructor.name).toBe('Response')
       })
@@ -64,7 +64,7 @@ describe('fetcher', () => {
       type ArrayOfNumbers = number[]
       const url = '/foo.json'
       const data: ArrayOfNumbers = [1, 2, 3, 4, 5]
-      fetch_mock.get(url, data)
+      fetchMock.get(url, data)
       await expect(fetcher().get<ArrayOfNumbers>(url)).resolves.toEqual(data)
     })
 
@@ -270,12 +270,12 @@ describe('fetcher', () => {
         // If the test is expecting an error, then we'll mock the fetch to
         // throw an error.
         if (expected.error && status) {
-          fetch_mock[method](full_url, status)
+          fetchMock[method](full_url, status)
           await expect(fetcher(options)[method](url, payload, init)).rejects.toThrow(expected.error)
           return
         }
 
-        const mock = fetch_mock[method](full_url, {
+        const mock = fetchMock[method](full_url, {
           body: response,
           ...init,
           headers: {
