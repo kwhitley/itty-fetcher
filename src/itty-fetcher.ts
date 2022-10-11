@@ -86,7 +86,6 @@ const fetchy =
     if (options.transformRequest) req = options.transformRequest(req)
 
     const { url, ...init } = req
-    console.log(init)
 
     const f = typeof options?.fetch === 'function' ? options.fetch : fetch
 
