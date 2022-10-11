@@ -70,12 +70,12 @@ const fetchy =
     let req: RequestLike = {
       url: full_url,
       method,
+      body: payload instanceof FormData ? payload : JSON.stringify(payload),
       ...fetchOptions,
       headers: {
         'Content-Type': 'application/json',
         ...fetchOptions?.headers,
       },
-      body: payload instanceof FormData ? payload : JSON.stringify(payload),
     }
 
     /**
@@ -86,6 +86,7 @@ const fetchy =
     if (options.transformRequest) req = options.transformRequest(req)
 
     const { url, ...init } = req
+    console.log(init)
 
     const f = typeof options?.fetch === 'function' ? options.fetch : fetch
 
