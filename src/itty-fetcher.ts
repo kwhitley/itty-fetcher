@@ -66,7 +66,7 @@ const fetchy =
     }
 
     const full_url = (options.base || '') + url_or_path + search
-    const passthrough: boolean = payload instanceof FormData || payload instanceof Blob
+    const passthrough = payload instanceof FormData || payload instanceof Blob
     const jsonHeaders = !passthrough ? { 'content-type': 'application/json' } : undefined
 
     let req: RequestLike = {
