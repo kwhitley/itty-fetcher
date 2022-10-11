@@ -136,7 +136,7 @@ describe('fetcher', () => {
       'will pass Blob as-is (no stringify or content-type injection)': {
         method: 'post',
         payload: new Blob(['foo'], { type: 'text/plain' }),
-        expected: { headers: {} },
+        expected: { body: new Blob(['foo'], { type: 'text/plain' }), headers: {} },
       },
 
       // Manual body property
