@@ -1,11 +1,11 @@
 import fetchMock from 'fetch-mock'
-import 'isomorphic-fetch'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest'
 import { fetcher, FetcherOptions, RequestPayload } from './itty-fetcher'
 
 describe('fetcher', () => {
   beforeEach(() => {
     fetchMock.reset()
+    vi.clearAllMocks()
   })
 
   it('default import is a function', () => {
@@ -119,12 +119,23 @@ describe('fetcher', () => {
         init: { headers: { A: 'a' } },
         expected: { headers: { A: 'a', 'Content-Type': 'application/json' } },
       },
+      'can override Content-Type header': {
+        init: { headers: { 'content-type': 'text/plain' } },
+        expected: { headers: { 'content-type': 'text/plain' } },
+      },
 
       // FormData
       'will pass FormData as-is (will not JSON.stringify)': {
         method: 'post',
         payload: formdata,
         expected: { body: formdata },
+      },
+
+      // Manual body property
+      'can manually over the payload body in the init body': {
+        method: 'post',
+        init: { body: new Blob(['foo'], { type: 'text/plain' }) },
+        expected: { body: new Blob(['foo'], { type: 'text/plain' }) },
       },
 
       // GET query param handling
