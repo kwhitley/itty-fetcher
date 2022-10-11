@@ -50,6 +50,9 @@ api.foo('/kitten/13', { name: 'Different Cat' }) // sends using FOO method
 await api.get('/names', { max: 2, foo: ['bar', 'baz'] })
 // GET https://api.kittens.com/v1/names?max=2&foo=bar&foo=baz
 
+// send files/blobs directly
+await api.post('/upload', new Blob(['some text'], { type: 'plain/text' }))
+
 // ERROR HANDLING: 400, 404, 500, etc will actually throw, allowing an easy catch
 api.get('/not-a-valid-path').catch(({ status, message }) => {
   console.log('received a status', status, 'error with message:', message)

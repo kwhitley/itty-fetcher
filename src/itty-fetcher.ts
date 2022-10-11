@@ -8,7 +8,7 @@ type FetchOptions = Omit<RequestInit, 'headers'> & {
   headers?: Record<string, string>
 }
 
-export type RequestPayload = string | number | object | any[] | FormData | undefined
+export type RequestPayload = string | number | object | any[] | FormData | Blob | undefined
 
 export interface FetcherOptions {
   base?: string
@@ -66,14 +66,16 @@ const fetchy =
     }
 
     const full_url = (options.base || '') + url_or_path + search
+    const passthrough = payload instanceof FormData || payload instanceof Blob
+    const jsonHeaders = !passthrough ? { 'content-type': 'application/json' } : undefined
 
     let req: RequestLike = {
       url: full_url,
       method,
-      body: payload instanceof FormData ? payload : JSON.stringify(payload),
+      body: (payload instanceof FormData || payload instanceof Blob) ? payload : JSON.stringify(payload),
       ...fetchOptions,
       headers: {
-        'Content-Type': 'application/json',
+        ...jsonHeaders,
         ...fetchOptions?.headers,
       },
     }
