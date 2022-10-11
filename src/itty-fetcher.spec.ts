@@ -1,5 +1,5 @@
 import fetchMock from 'fetch-mock'
-import { beforeEach, describe, expect, it, Mock, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetcher, FetcherOptions, RequestPayload } from './itty-fetcher'
 
 describe('fetcher', () => {
@@ -49,7 +49,7 @@ describe('fetcher', () => {
         expect(custom_fetch).toBeCalledWith('/foo', {
           method: 'GET',
           body: undefined,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'content-type': 'application/json' },
         })
       })
     })
@@ -116,8 +116,9 @@ describe('fetcher', () => {
       // Passing headers in init
       'will still embed content-type header if headers are included in fetch options': {
         method: 'patch',
+        payload: { foo: 'bar' },
         init: { headers: { A: 'a' } },
-        expected: { headers: { A: 'a', 'Content-Type': 'application/json' } },
+        expected: { headers: { A: 'a', 'content-type': 'application/json' } },
       },
       'can override Content-Type header': {
         init: { headers: { 'content-type': 'text/plain' } },
@@ -129,6 +130,13 @@ describe('fetcher', () => {
         method: 'post',
         payload: formdata,
         expected: { body: formdata },
+      },
+
+      // Manual body property
+      'will pass Blob as-is (no stringify or content-type injection)': {
+        method: 'post',
+        payload: new Blob(['foo'], { type: 'text/plain' }),
+        expected: { headers: {} },
       },
 
       // Manual body property
