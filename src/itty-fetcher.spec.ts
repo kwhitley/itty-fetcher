@@ -270,7 +270,7 @@ describe('fetcher', () => {
         // If the test is expecting an error, then we'll mock the fetch to
         // throw an error.
         if (expected.error && status) {
-          fetchMock[method](full_url, status)
+          fetchMock.mock(full_url, status)
           await expect(fetcher(options)[method](url, payload, init)).rejects.toThrow(expected.error)
           return
         }
