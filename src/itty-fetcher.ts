@@ -1,14 +1,16 @@
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-type RequestLike = WithRequired<RequestInit, 'method'> & {
+export type RequestLike = WithRequired<RequestInit, 'method'> & {
   headers: Record<string, string>
   url: string
 }
-type FetchOptions = Omit<RequestInit, 'headers'> & {
+export type FetchOptions = Omit<RequestInit, 'headers'> & {
   headers?: Record<string, string>
 }
 
-export type RequestPayload = string | number | object | any[] | FormData | Blob | undefined
+export type PassThroughPayload = FormData | Blob | Uint8Array
+
+export type RequestPayload = string | number | object | any[] | PassThroughPayload | undefined
 
 export interface FetcherOptions {
   base?: string
@@ -17,24 +19,24 @@ export interface FetcherOptions {
   fetch?: typeof fetch
 }
 
-type FetchyFunction = <T>(
+export type FetchyFunction = <T>(
   url: string,
   payload?: RequestPayload,
   options?: object | undefined,
 ) => Promise<T>
 
-type FetchTraps = {
+export type FetchTraps = {
   [key: string]: FetchyFunction
 }
 
-type FetcherType = FetcherOptions & {
+export type FetcherType = FetcherOptions & {
   get: FetchyFunction
   post: FetchyFunction
   put: FetchyFunction
   delete: FetchyFunction
 } & FetchTraps
 
-type FetchyOptions = {
+export type FetchyOptions = {
   method: string
 } & FetcherOptions
 
@@ -66,13 +68,25 @@ const fetchy =
     }
 
     const full_url = (options.base || '') + url_or_path + search
-    const passthrough = payload instanceof FormData || payload instanceof Blob
+
+    /**
+     * Detect what type of incoming payload is provided. If it is FormData, Blob
+     * or Uint8Array, we will not attempt to stringify it. Otherwise, we will.
+     *
+     * TODO: This is a bit funky and isn't very extensible. We should probably
+     * find a better approach.
+     */
+    const is_formdata = typeof FormData !== 'undefined' && payload instanceof FormData
+    const is_blob = typeof Blob !== 'undefined' && payload instanceof Blob
+    const is_arraybuffer = typeof Uint8Array !== 'undefined' && payload instanceof Uint8Array
+    const passthrough = is_formdata || is_blob || is_arraybuffer
+
     const jsonHeaders = !passthrough ? { 'content-type': 'application/json' } : undefined
 
     let req: RequestLike = {
       url: full_url,
       method,
-      body: (payload instanceof FormData || payload instanceof Blob) ? payload : JSON.stringify(payload),
+      body: passthrough ? (payload as PassThroughPayload) : JSON.stringify(payload),
       ...fetchOptions,
       headers: {
         ...jsonHeaders,

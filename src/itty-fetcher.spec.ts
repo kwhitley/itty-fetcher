@@ -132,7 +132,7 @@ describe('fetcher', () => {
         expected: { body: formdata },
       },
 
-      // Manual body property
+      // Blob
       'will pass Blob as-is (no stringify or content-type injection)': {
         method: 'post',
         payload: new Blob(['foo'], { type: 'text/plain' }),
