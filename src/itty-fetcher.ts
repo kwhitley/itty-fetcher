@@ -27,7 +27,7 @@ type FetchTraps = {
   [key: string]: FetchyFunction
 }
 
-type FetcherType = FetcherOptions & {
+export type FetcherType = FetcherOptions & {
   get: FetchyFunction
   post: FetchyFunction
   put: FetchyFunction
