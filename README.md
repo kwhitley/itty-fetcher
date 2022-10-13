@@ -11,7 +11,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/kwhitley/itty-fetcher?style=social)](https://github.com/kwhitley/itty-fetcher)
 [![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
 
-Tiny (~550 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP method (existing or imagined).
+Tiny (~600 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP method (existing or imagined).
 
 ## Features
 
