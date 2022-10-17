@@ -8,9 +8,10 @@ export type FetchOptions = Omit<RequestInit, 'headers'> & {
   headers?: Record<string, string>
 }
 
+export type StringifyPayload = string | number | object | any[] | undefined
 export type PassThroughPayload = FormData | Blob | Uint8Array
 
-export type RequestPayload = string | number | object | any[] | PassThroughPayload | undefined
+export type RequestPayload = StringifyPayload | PassThroughPayload
 
 export interface FetcherOptions {
   base?: string
@@ -36,9 +37,7 @@ export type FetcherType = FetcherOptions & {
   delete: FetchyFunction
 } & FetchTraps
 
-export type FetchyOptions = {
-  method: string
-} & FetcherOptions
+export type FetchyOptions = { method: string } & FetcherOptions
 
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
@@ -70,23 +69,22 @@ const fetchy =
     const full_url = (options.base || '') + url_or_path + search
 
     /**
-     * Detect what type of incoming payload is provided. If it is FormData, Blob
-     * or Uint8Array, we will not attempt to stringify it. Otherwise, we will.
-     *
-     * TODO: This is a bit funky and isn't very extensible. We should probably
-     * find a better approach.
+     * If the payload is a POJO, an array or a string, we will stringify it
+     * automatically, otherwise we will pass it through as-is.
      */
-    const is_formdata = typeof FormData !== 'undefined' && payload instanceof FormData
-    const is_blob = typeof Blob !== 'undefined' && payload instanceof Blob
-    const is_arraybuffer = typeof Uint8Array !== 'undefined' && payload instanceof Uint8Array
-    const passthrough = is_formdata || is_blob || is_arraybuffer
+    const stringify =
+      typeof payload === 'undefined' ||
+      typeof payload === 'string' ||
+      typeof payload === 'number' ||
+      Array.isArray(payload) ||
+      Object.getPrototypeOf(payload).toString() === '[object Object]'
 
-    const jsonHeaders = !passthrough ? { 'content-type': 'application/json' } : undefined
+    const jsonHeaders = stringify ? { 'content-type': 'application/json' } : undefined
 
     let req: RequestLike = {
       url: full_url,
       method,
-      body: passthrough ? (payload as PassThroughPayload) : JSON.stringify(payload),
+      body: stringify ? JSON.stringify(payload) : (payload as PassThroughPayload),
       ...fetchOptions,
       headers: {
         ...jsonHeaders,
