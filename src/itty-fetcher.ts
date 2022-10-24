@@ -77,7 +77,7 @@ const fetchy =
       typeof payload === 'string' ||
       typeof payload === 'number' ||
       Array.isArray(payload) ||
-      Object.getPrototypeOf(payload).toString() === '[object Object]'
+      Object.getPrototypeOf(payload).constructor.name === 'Object'
 
     const jsonHeaders = stringify ? { 'content-type': 'application/json' } : undefined
 

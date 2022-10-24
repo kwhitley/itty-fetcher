@@ -138,6 +138,11 @@ describe('fetcher', () => {
         payload: new Blob(['foo'], { type: 'text/plain' }),
         expected: { body: new Blob(['foo'], { type: 'text/plain' }), headers: {} },
       },
+      'will pass Uint8Array as-is (no stringify or content-type injection)': {
+        method: 'post',
+        payload: new Uint8Array(new TextEncoder().encode('hello world')),
+        expected: { body: new Uint8Array(new TextEncoder().encode('hello world')), headers: {} },
+      },
 
       // Manual body property
       'can manually over the payload body in the init body': {
