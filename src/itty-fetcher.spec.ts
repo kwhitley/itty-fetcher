@@ -174,6 +174,15 @@ describe('fetcher', () => {
         expected: { error: 'Internal Server Error' },
       },
 
+      // global headers
+      'can set a header via global options as well as per-route overrides': {
+        url: '/foo',
+        options: {
+          headers: { Foo: 'bar' },
+        },
+        expected: { url: '/foo', headers: { Foo: 'bar' } },
+      },
+
       // transformRequest
       'can set a header on request (no path)': {
         options: {

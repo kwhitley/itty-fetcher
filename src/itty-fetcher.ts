@@ -18,6 +18,7 @@ export interface FetcherOptions {
   autoParse?: boolean
   transformRequest?: (request: RequestLike) => RequestLike
   fetch?: typeof fetch
+  headers?: Record<string, string>
 }
 
 export type FetchyFunction = <T>(
@@ -88,6 +89,7 @@ const fetchy =
       ...fetchOptions,
       headers: {
         ...jsonHeaders,
+        ...options?.headers,
         ...fetchOptions?.headers,
       },
     }
