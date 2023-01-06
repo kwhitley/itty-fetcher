@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/npm/v/itty-fetcher.svg?style=flat-square)](https://npmjs.com/package/itty-fetcher)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/itty-fetcher?style=flat-square)](https://bundlephobia.com/result?p=itty-fetcher)
-![Build Status](https://img.shields.io/github/workflow/status/kwhitley/itty-fetcher/build?style=flat-square)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/kwhitley/itty-fetcher/verify.yml?branch=v0.x&style=flat-square)](https://github.com/kwhitley/itty-router/actions/workflows/verify.yml)
 [![Coverage Status](https://img.shields.io/coveralls/github/kwhitley/itty-fetcher/v0.x?style=flat-square)](https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x)
 [![NPM Weekly Downloads](https://img.shields.io/npm/dw/itty-fetcher?style=flat-square)](https://npmjs.com/package/itty-fetcher)
 [![Open Issues](https://img.shields.io/github/issues/kwhitley/itty-fetcher?style=flat-square)](https://github.com/kwhitley/itty-fetcher/issues)
