@@ -119,17 +119,17 @@ const fetchy =
       if (options.handleResponse)
         return options.handleResponse(response)
 
-      if (response.ok) {
-        if (!options.autoParse) return response
-
-        const contentType = response.headers.get('content-type')
-
-        return contentType.includes('json')
-                ? response.json()
-                : response.text()
+      if (!response.ok) {
+        throw new StatusError(response.status, response.statusText)
       }
 
-      throw new StatusError(response.status, response.statusText)
+      if (!options.autoParse) return response
+
+      const contentType = response.headers.get('content-type')
+
+      return contentType.includes('json')
+              ? response.json()
+              : response.text()
     })
   }
 
