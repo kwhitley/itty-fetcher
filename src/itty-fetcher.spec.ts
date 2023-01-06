@@ -2,6 +2,8 @@ import fetchMock from 'fetch-mock'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetcher, FetcherOptions, RequestPayload } from './itty-fetcher'
 
+type StatusCode = string
+
 describe('fetcher', () => {
   beforeEach(() => {
     fetchMock.reset()
@@ -267,7 +269,7 @@ describe('fetcher', () => {
       'will use optional handleResponse option': {
         options: {
           base,
-          handleResponse: (response) => response.status,
+          handleResponse: (response): number => response.status,
         },
         expected: {
           response: 200,

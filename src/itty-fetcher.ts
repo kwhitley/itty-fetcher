@@ -26,7 +26,7 @@ export interface FetcherOptions {
   base?: string
   autoParse?: boolean
   transformRequest?: (request: RequestLike) => RequestLike,
-  handleResponse?: <T = any>(response: Response) => Promise<T>,
+  handleResponse?: (response: Response) => any,
   fetch?: typeof fetch
   headers?: Record<string, string>
 }
