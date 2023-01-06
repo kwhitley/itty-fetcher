@@ -1,6 +1,8 @@
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-class StatusError extends Error {
+export class StatusError extends Error {
+  status: number
+
   constructor(status = 500, message = 'Internal Error.') {
     super(message)
     this.status = status
@@ -113,9 +115,9 @@ const fetchy =
 
     const f = typeof options?.fetch === 'function' ? options.fetch : fetch
 
-    return f(url, init).then(async (response) => {
+    return f(url, init).then((response) => {
       if (options.handleResponse)
-        return await options.handleResponse(response)
+        return options.handleResponse(response)
 
       if (response.ok) {
         if (!options.autoParse) return response
