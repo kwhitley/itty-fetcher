@@ -2,8 +2,6 @@ import fetchMock from 'fetch-mock'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetcher, FetcherOptions, RequestPayload } from './itty-fetcher'
 
-type StatusCode = string
-
 describe('fetcher', () => {
   beforeEach(() => {
     fetchMock.reset()
