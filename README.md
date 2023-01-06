@@ -21,7 +21,7 @@ Tiny (~600 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP meth
 - Accepts _any_ HTTP method (including user-defined)
 - 404, 400, 500, errors actually throw to allow easier catching
 - Still allows any native fetch options (including headers, etc) to be sent
-- allows full takeover of the Response chain
+- allows full takeover of the Response chain/error-handling
 
 ## Simple Usage
 
