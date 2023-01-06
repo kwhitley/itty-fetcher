@@ -1,5 +1,12 @@
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
+class StatusError extends Error {
+  constructor(status = 500, message = 'Internal Error.') {
+    super(message)
+    this.status = status
+  }
+}
+
 export type RequestLike = WithRequired<RequestInit, 'method'> & {
   headers: Record<string, string>
   url: string
@@ -16,7 +23,8 @@ export type RequestPayload = StringifyPayload | PassThroughPayload
 export interface FetcherOptions {
   base?: string
   autoParse?: boolean
-  transformRequest?: (request: RequestLike) => RequestLike
+  transformRequest?: (request: RequestLike) => RequestLike,
+  handleResponse?: <T = any>(response: Response) => Promise<T>,
   fetch?: typeof fetch
   headers?: Record<string, string>
 }
@@ -105,16 +113,21 @@ const fetchy =
 
     const f = typeof options?.fetch === 'function' ? options.fetch : fetch
 
-    return f(url, init).then((response) => {
+    return f(url, init).then(async (response) => {
+      if (options.handleResponse)
+        return await options.handleResponse(response)
+
       if (response.ok) {
         if (!options.autoParse) return response
 
         const contentType = response.headers.get('content-type')
 
-        return contentType.includes('json') ? response.json() : response.text()
+        return contentType.includes('json')
+                ? response.json()
+                : response.text()
       }
 
-      throw new Error(response.statusText)
+      throw new StatusError(response.status, response.statusText)
     })
   }
 

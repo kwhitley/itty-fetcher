@@ -264,6 +264,15 @@ describe('fetcher', () => {
         },
         expected: { url: 'https://bar.com/' },
       },
+      'will use optional handleResponse option': {
+        options: {
+          base,
+          handleResponse: (response) => response.status,
+        },
+        expected: {
+          response: 200,
+        },
+      },
     }
 
     for (const [name, t] of Object.entries(tests)) {
