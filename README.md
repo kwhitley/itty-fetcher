@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/npm/v/itty-fetcher.svg?style=flat-square)](https://npmjs.com/package/itty-fetcher)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/itty-fetcher?style=flat-square)](https://bundlephobia.com/result?p=itty-fetcher)
-![Build Status](https://img.shields.io/github/workflow/status/kwhitley/itty-fetcher/build?style=flat-square)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/kwhitley/itty-fetcher/verify.yml?branch=v0.x&style=flat-square)](https://github.com/kwhitley/itty-router/actions/workflows/verify.yml)
 [![Coverage Status](https://img.shields.io/coveralls/github/kwhitley/itty-fetcher/v0.x?style=flat-square)](https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x)
 [![NPM Weekly Downloads](https://img.shields.io/npm/dw/itty-fetcher?style=flat-square)](https://npmjs.com/package/itty-fetcher)
 [![Open Issues](https://img.shields.io/github/issues/kwhitley/itty-fetcher?style=flat-square)](https://github.com/kwhitley/itty-fetcher/issues)
@@ -21,6 +21,7 @@ Tiny (~600 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP meth
 - Accepts _any_ HTTP method (including user-defined)
 - 404, 400, 500, errors actually throw to allow easier catching
 - Still allows any native fetch options (including headers, etc) to be sent
+- allows full takeover of the Response chain/error-handling
 
 ## Simple Usage
 
@@ -54,9 +55,11 @@ await api.get('/names', { max: 2, foo: ['bar', 'baz'] })
 await api.post('/upload', new Blob(['some text'], { type: 'plain/text' }))
 
 // ERROR HANDLING: 400, 404, 500, etc will actually throw, allowing an easy catch
-api.get('/not-a-valid-path').catch(({ status, message }) => {
-  console.log('received a status', status, 'error with message:', message)
-})
+api
+  .get('/not-a-valid-path')
+  .catch(({ status, message }) => {
+    console.log('received a status', status, 'error with message:', message)
+  })
 ```
 
 ## Why yet another fetching library?
@@ -118,6 +121,7 @@ Returns a fetcher object, with method calls (like `.get`, `.post`, etc) mapped t
 | **autoParse**        | `boolean`                               | `true`                 | By default, all responses are parsed to JSON/text/etc. To access the Response directly, set this to false.                                                                                                                                 |
 | **base**             | `string`                                | `''` (an empty string) | Use this to prefix all future fetch calls, for example `{ base: "https://api.foo.bar/v1" }`, allows future calls such as `fetcher.get('/kittens/14')` to work by automatically prepending the base URL.                                    |
 | **fetch**            | `typeof fetch`                          | `undefined`            | An optional implementation of `fetch` that will be used instead of the built-in `fetch` on all requests. This is useful when your may need to work with a modified version of fetch, like SvelteKit's `load` function.                     |
+| **handleResponse** | `(response: Response) => any` | `undefined` | An optional method to take over the response-handling (and throwing) of itty-fetcher. Using this will disregard the `autoParse` flag. This option allows for a transform to split responses into { data, error } shapes, for instance, to better align with await syntax. |
 | **transformRequest** | `(request: RequestLike) => RequestLike` | `undefined`            | An optional method that allows for transforming a request before it is sent. This is useful for adding headers, etc. The method is passed the request object, and should return the request object (or a new one). See below for examples. |
 
 `RequestLike` matches the following signature:
