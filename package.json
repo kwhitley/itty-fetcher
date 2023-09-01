@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "0.8.1-next.5",
+  "version": "0.8.1-next.6",
   "description": "Tiny wrapper around native fetch to remove boilerplate from your own API fetching code.",
   "main": "./index.js",
   "module": "./index.mjs",
@@ -41,7 +41,6 @@
     "prerelease:next": "yarn verify",
     "prebuild": "rimraf dist && mkdir dist",
     "build": "rollup -c",
-    "prepublishOnly": "yarn build",
     "release": "release --tag --push --patch --src=dist",
     "release:next": "release --tag --push --type=next --src=dist"
   },
