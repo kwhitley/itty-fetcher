@@ -132,7 +132,7 @@ const fetchy =
 
       const contentType = response.headers.get('content-type')
 
-      return contentType.includes('json')
+      return contentType?.includes('json')
               ? response.json()
               : response.text()
     })
