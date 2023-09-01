@@ -16,7 +16,6 @@ const files = (await globby('./src/*.ts', {
   types: path.replace('/src/', '/dist/').replace('.ts', '.d.ts'),
 })).sort((a, b) => a.shortPath.toLowerCase() < b.shortPath.toLowerCase() ? -1 : 1)
 
-
 // read original package.json
 const pkg = await fs.readJSON('./package.json')
 

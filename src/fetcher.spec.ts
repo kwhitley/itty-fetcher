@@ -1,7 +1,7 @@
 import fetchMock from 'fetch-mock'
 import 'isomorphic-fetch'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { FetcherOptions, RequestPayload, fetcher } from './itty-fetcher'
+import { FetcherOptions, RequestPayload, fetcher } from './fetcher'
 
 describe('fetcher', () => {
   beforeEach(() => {
