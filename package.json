@@ -1,10 +1,10 @@
 {
   "name": "itty-fetcher",
-  "version": "0.8.1-next.2",
+  "version": "0.8.1-next.3",
   "description": "Tiny wrapper around native fetch to remove boilerplate from your own API fetching code.",
-  "main": "./dist/fetcher.js",
-  "module": "./dist/fetcher.mjs",
-  "types": "./dist/fetcher.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./index.mjs",
