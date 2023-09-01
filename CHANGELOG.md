@@ -1,6 +1,7 @@
 ## Changelog
 Until this library makes it to a production release of v1.x, **minor versions may contain breaking changes to the API**.  After v1.x, semantic versioning will be honored, and breaking changes will only occur under the umbrella of a major version bump.
 
+- **v0.8.2** - fixes duplicate query ? bug on GET requests with param objects, switches build to rollup to match itty-router
 - **v0.8.0** - adds StatusError class (and status to thrown !response.ok Errors), and handleResponse fetcher option.
 - **v0.7.3** - better content-type-checking [@danawoodman](https://github.com/danawoodman)
 - **v0.7.0** - adds fetch config option for using non-native fetch libraries - [@danawoodman](https://github.com/danawoodman), blob support [@danawoodman](https://github.com/danawoodman) and [@kwhitley](https://github.com/kwhitley)
