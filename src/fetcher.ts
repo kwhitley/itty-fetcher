@@ -64,7 +64,7 @@ const fetchy =
 
     if (method === 'GET' && payload && typeof payload === 'object') {
 
-      const [base, query = ''] = url_or_path.split('?')
+      const query = url_or_path.split('?')[0] || ''
       const merged = new URLSearchParams(query)
 
       const entries = payload instanceof URLSearchParams

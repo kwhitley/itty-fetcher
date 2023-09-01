@@ -1,9 +1,9 @@
 import terser from '@rollup/plugin-terser'
 import typescript from '@rollup/plugin-typescript'
+import fs from 'fs-extra'
 import { globby } from 'globby'
 import bundleSize from 'rollup-plugin-bundle-size'
 import copy from 'rollup-plugin-copy'
-import fs from 'fs-extra'
 
 // scan files to build
 const files = (await globby('./src/*.ts', {
