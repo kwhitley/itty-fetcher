@@ -1,38 +1,33 @@
 {
   "name": "itty-fetcher",
-  "version": "0.8.1",
+  "version": "0.8.1-next.8",
   "description": "Tiny wrapper around native fetch to remove boilerplate from your own API fetching code.",
-  "sourceType": "module",
-  "main": "./dist/itty-fetcher.js",
-  "module": "./dist/itty-fetcher.mjs",
-  "types": "./dist/itty-fetcher.d.ts",
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/itty-fetcher.js",
-      "import": "./dist/itty-fetcher.mjs",
-      "types": "./dist/itty-fetcher.d.ts"
+      "import": "./index.mjs",
+      "require": "./index.js",
+      "types": "./index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
   "scripts": {
     "lint": "eslint src",
     "test": "vitest --coverage --reporter verbose",
     "test:once": "vitest run",
-    "verify": "echo 'verifying module...' && run-s test:once build",
     "dev": "run-p dev:lint test",
     "dev:lint": "onchange -ik 'src/**/*.ts' -- yarn lint",
     "coverage": "vitest run --coverage",
     "coveralls": "yarn coverage && cat ./coverage/lcov.info | coveralls",
     "format": "prettier src --write src",
+    "verify": "echo 'verifying module...' && yarn build && yarn test:once",
     "prerelease": "yarn verify",
+    "prerelease:next": "yarn verify",
     "prebuild": "rimraf dist && mkdir dist",
-    "build": "tsup src/itty-fetcher.ts --format cjs,esm --minify --dts --clean",
-    "prepublishOnly": "yarn build",
-    "release": "release --tag --push --patch"
+    "build": "rollup -c",
+    "release": "release --tag --push --patch --src=dist",
+    "release:next": "release --tag --push --type=next --src=dist"
   },
   "keywords": [
     "fetch",
@@ -51,26 +46,31 @@
     "url": "https://github.com/kwhitley/itty-fetcher/issues"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.36.2",
-    "@typescript-eslint/parser": "^5.36.2",
-    "@vitest/coverage-c8": "0.23.4",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.3",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "@typescript-eslint/parser": "^6.5.0",
+    "@vitest/coverage-v8": "^0.34.3",
     "coveralls": "^3.1.1",
-    "esbuild": "^0.15.7",
-    "eslint": "^8.23.0",
+    "esbuild": "^0.19.2",
+    "eslint": "^8.48.0",
     "fetch-mock": "^9.11.0",
-    "fs-extra": "^10.1.0",
-    "jsdom": "20.0.1",
-    "node-fetch": "2.6.7",
+    "fs-extra": "^11.1.1",
+    "globby": "^13.2.2",
+    "isomorphic-fetch": "^3.0.0",
+    "jsdom": "22.1.0",
+    "node-fetch": "=2.6.7",
     "npm-run-all": "4.1.5",
     "onchange": "7.1.0",
-    "prettier": "^2.7.1",
-    "rimraf": "^3.0.2",
+    "prettier": "^3.0.3",
+    "rimraf": "^5.0.1",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "rollup-plugin-copy": "^3.4.0",
     "ts-node": "^10.9.1",
-    "tsup": "^6.2.3",
-    "typescript": "^4.8.3",
-    "uglify-js": "^3.17.0",
-    "vitest": "0.23.4",
+    "typescript": "^5.2.2",
+    "uglify-js": "^3.17.4",
+    "vitest": "0.34.3",
     "yarn": "^1.22.19",
-    "yarn-release": "^1.10.3"
+    "yarn-release": "^1.10.6"
   }
 }
