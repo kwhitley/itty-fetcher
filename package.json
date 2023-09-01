@@ -7,10 +7,15 @@
   "module": "./dist/itty-fetcher.mjs",
   "types": "./dist/itty-fetcher.d.ts",
   "exports": {
-    ".": {
-      "require": "./dist/itty-fetcher.js",
-      "import": "./dist/itty-fetcher.mjs",
-      "types": "./dist/itty-fetcher.d.ts"
+    "./fetcher": {
+      "import": "./fetcher.mjs",
+      "require": "./fetcher.js",
+      "types": "./fetcher.d.ts"
+    },
+    "./StatusError": {
+      "import": "./StatusError.mjs",
+      "require": "./StatusError.js",
+      "types": "./StatusError.d.ts"
     }
   },
   "files": [
@@ -22,15 +27,16 @@
     "lint": "eslint src",
     "test": "vitest --coverage --reporter verbose",
     "test:once": "vitest run",
-    "verify": "echo 'verifying module...' && run-s test:once build",
     "dev": "run-p dev:lint test",
     "dev:lint": "onchange -ik 'src/**/*.ts' -- yarn lint",
     "coverage": "vitest run --coverage",
     "coveralls": "yarn coverage && cat ./coverage/lcov.info | coveralls",
     "format": "prettier src --write src",
+    "verify": "echo 'verifying module...' && yarn build && yarn test:once",
     "prerelease": "yarn verify",
+    "prerelease:next": "yarn verify",
     "prebuild": "rimraf dist && mkdir dist",
-    "build": "tsup src/itty-fetcher.ts --format cjs,esm --minify --dts --clean",
+    "build": "rollup -c",
     "prepublishOnly": "yarn build",
     "release": "release --tag --push --patch"
   },
@@ -51,6 +57,8 @@
     "url": "https://github.com/kwhitley/itty-fetcher/issues"
   },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.3",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@typescript-eslint/parser": "^5.36.2",
     "@vitest/coverage-c8": "0.23.4",
@@ -58,15 +66,18 @@
     "esbuild": "^0.15.7",
     "eslint": "^8.23.0",
     "fetch-mock": "^9.11.0",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.1",
+    "globby": "^13.2.2",
+    "isomorphic-fetch": "^3.0.0",
     "jsdom": "20.0.1",
     "node-fetch": "2.6.7",
     "npm-run-all": "4.1.5",
     "onchange": "7.1.0",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "rollup-plugin-copy": "^3.4.0",
     "ts-node": "^10.9.1",
-    "tsup": "^6.2.3",
     "typescript": "^4.8.3",
     "uglify-js": "^3.17.0",
     "vitest": "0.23.4",

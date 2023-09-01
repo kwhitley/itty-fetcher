@@ -1,13 +1,6 @@
+import { StatusError } from './StatusError'
+
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
-
-export class StatusError extends Error {
-  status: number
-
-  constructor(status = 500, message = 'Internal Error.') {
-    super(message)
-    this.status = status
-  }
-}
 
 export type RequestLike = WithRequired<RequestInit, 'method'> & {
   headers: Record<string, string>
@@ -66,15 +59,27 @@ const fetchy =
      *
      * We clear the payload after this so that it doesn't get passed to the body.
      */
+    // let url = new URL(url_or_path)
     let search = ''
+
     if (method === 'GET' && payload && typeof payload === 'object') {
-      search =
-        '?' +
-        (payload instanceof URLSearchParams
-          ? payload
-          : new URLSearchParams(payload as Record<string, string>)
-        ).toString()
+
+      const [base, query = ''] = url_or_path.split('?')
+      const merged = new URLSearchParams(query)
+
+      const entries = payload instanceof URLSearchParams
+      // @ts-expect-error - ignore this
+      ? Array.from(payload.entries())
+      : Object.entries(payload)
+
+      // @ts-expect-error - ignore this
+      for (const [key, value] of entries) {
+        merged.append(key, value)
+      }
+
+      search = merged.toString() ? '?' + merged : ''
       payload = undefined
+
     }
 
     const full_url = (options.base || '') + url_or_path + search
