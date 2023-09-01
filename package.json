@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "0.8.1-next.7",
+  "version": "0.8.1-next.8",
   "description": "Tiny wrapper around native fetch to remove boilerplate from your own API fetching code.",
   "main": "./index.js",
   "module": "./index.mjs",
@@ -10,16 +10,6 @@
       "import": "./index.mjs",
       "require": "./index.js",
       "types": "./index.d.ts"
-    },
-    "./fetcher": {
-      "import": "./fetcher.mjs",
-      "require": "./fetcher.js",
-      "types": "./fetcher.d.ts"
-    },
-    "./StatusError": {
-      "import": "./StatusError.mjs",
-      "require": "./StatusError.js",
-      "types": "./StatusError.d.ts"
     }
   },
   "scripts": {
