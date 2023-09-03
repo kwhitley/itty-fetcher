@@ -67,19 +67,20 @@ const fetchy =
     // let url = new URL(url_or_path)
 
     const method = options.method.toUpperCase()
-    let search = ''
+    let [urlBase, queryParams = ''] = url_or_path.split('?')
 
     if (method === 'GET' && payload && typeof payload === 'object') {
-        const merged = new URLSearchParams(url_or_path.split('?')[0])
-        // @ts-expect-error we don't care about this
-        const entries = (payload instanceof URLSearchParams ? payload : new URLSearchParams(payload)).entries()
+        const merged = new URLSearchParams(queryParams)
 
+        // @ts-expect-error ignore this
+        const entries = (payload instanceof URLSearchParams ? payload : new URLSearchParams(payload)).entries()
         for (const [key, value] of entries) merged.append(key, value)
-        search = merged.toString() ? '?' + merged : ''
+
+        queryParams = merged.toString() ? '?' + merged : ''
         payload = null
     }
 
-    const full_url = (options.base || '') + url_or_path + search
+    const full_url = (options.base || '') + urlBase + queryParams
 
     /**
      * If the payload is a POJO, an array or a string, we will stringify it

@@ -248,17 +248,17 @@ describe('fetcher', () => {
         expected: { url: base + '/?message=hello+world' },
       },
       'combines query params from the URL and the payload (object)': {
-        payload: { foo: 10 },
+        url: '/somewhere?foo=10',
+        payload: { foo: 12, bar: 'baz' },
         options: {
           base,
           transformRequest(req) {
-            const url = new URL(req.url)
-            url.searchParams.set('message', 'hello world')
-            req.url = url.toString()
+            console.log('base', base)
+            console.log('REQUEST', req.url)
             return req
           },
         },
-        expected: { url: base + '/?foo=10&message=hello+world' },
+        expected: { url: base + '/somewhere?foo=10&foo=12&bar=baz' },
       },
       'combines query params from the URL and the payload (URLSearchParams)': {
         payload: new URLSearchParams([
