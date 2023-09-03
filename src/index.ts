@@ -1,19 +1,19 @@
 export class StatusError extends Error {
   status: number
-  #$r: Response
+  // #$r: Response
 
   constructor(status = 500, message = 'Internal Error.') {
     super(message)
     this.status = status
   }
 
-  get response() {
-    return this.#$r
-  }
+  // get response() {
+  //   return this.#$r
+  // }
 
-  set $r(r) {
-    this.#$r = r
-  }
+  // set $r(r) {
+  //   this.#$r = r
+  // }
 }
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
@@ -34,8 +34,8 @@ export type RequestPayload = StringifyPayload | PassThroughPayload
 export interface FetcherOptions {
   base?: string
   autoParse?: boolean
-  transformRequest?: (request: RequestLike) => RequestLike,
-  handleResponse?: (response: Response) => any,
+  transformRequest?: (request: RequestLike) => RequestLike
+  handleResponse?: (response: Response) => any
   fetch?: typeof fetch
   headers?: Record<string, string>
 }
@@ -77,7 +77,7 @@ const fetchy =
      */
     // let url = new URL(url_or_path)
 
-    const method = options.method.toUpperCase();
+    const method = options.method.toUpperCase()
     let search = ''
 
     if (method === 'GET' && payload && typeof payload === 'object') {
@@ -111,9 +111,9 @@ const fetchy =
     //   typeof payload === 'number' ||
     //   Array.isArray(payload) ||
     //   Object.getPrototypeOf(payload).constructor.name === 'Object'
-    const t = typeof payload;
+    const t = typeof payload
     const stringify =
-      !payload ||
+      t === 'undefined' ||
       t === 'string' ||
       t === 'number' ||
       Array.isArray(payload) ||
@@ -146,21 +146,21 @@ const fetchy =
     let error
 
     return f(url, init).then(async (response) => {
-      if (options.handleResponse) return options.handleResponse(response);
+      if (options.handleResponse) return options.handleResponse(response)
 
       if (!response.ok) {
-        error = new StatusError(response.status, response.statusText);
-        error.$r = response;
-      } else if (!options.autoParse) return response;
+        error = new StatusError(response.status, response.statusText)
+        // error.$r = response
+      } else if (!options.autoParse) return response
 
-      const content = await (response.headers.get('content-type')?.includes('json') ? response.json() : response.text());
+      const content = await (response.headers.get('content-type')?.includes('json') ? response.json() : response.text())
 
       if (error) {
-        Object.assign(error, typeof content === 'object' ? content : { message: content || error.message });
-        throw error;
+        Object.assign(error, typeof content === 'object' ? content : { message: content || error.message })
+        throw error
       }
 
-      return content;
+      return content
     })
   }
 
