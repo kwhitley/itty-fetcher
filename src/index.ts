@@ -52,7 +52,7 @@ export type FetchyOptions = { method: string } & FetcherOptions
 
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
-  (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
+  async (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
     const method = options.method.toUpperCase()
 
     /**
@@ -121,27 +121,35 @@ const fetchy =
      * in the options. This allows the user to modify the request before it is
      * sent.
      */
-    if (options.transformRequest) req = options.transformRequest(req)
+    if (options.transformRequest) req = await options.transformRequest(req)
 
     const { url, ...init } = req
 
     const f = typeof options?.fetch === 'function' ? options.fetch : fetch
+    let error
 
     return f(url, init).then((response) => {
       if (options.handleResponse)
         return options.handleResponse(response)
 
       if (!response.ok) {
-        throw new StatusError(response.status, response.statusText)
+        error = new StatusError(response.status, response.statusText)
+        error.response = response
       }
 
-      if (!options.autoParse) return response
+      if (!options.autoParse) return error || response
 
       const contentType = response.headers.get('content-type')
 
-      return contentType?.includes('json')
-              ? response.json()
-              : response.text()
+      const content =  contentType?.includes('json')
+                        ? response.json()
+                        : response.text()
+
+      if (error) {
+        throw Object.assign(error, typeof content === 'object' ? content : { message: content })
+      }
+
+      return content
     })
   }
 
