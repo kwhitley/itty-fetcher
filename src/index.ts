@@ -1,19 +1,10 @@
 export class StatusError extends Error {
   status: number
-  // #$r: Response
 
   constructor(status = 500, message = 'Internal Error.') {
     super(message)
     this.status = status
   }
-
-  // get response() {
-  //   return this.#$r
-  // }
-
-  // set $r(r) {
-  //   this.#$r = r
-  // }
 }
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
@@ -85,7 +76,7 @@ const fetchy =
 
         for (const [key, value] of entries) merged.append(key, value)
         search = merged.toString() ? '?' + merged : ''
-        payload = undefined
+        payload = null
     }
 
     const full_url = (options.base || '') + url_or_path + search
@@ -95,19 +86,11 @@ const fetchy =
      * automatically, otherwise we will pass it through as-is.
      */
 
-    // const stringify =
-    //   typeof payload === 'undefined' ||
-    //   typeof payload === 'string' ||
-    //   typeof payload === 'number' ||
-    //   Array.isArray(payload) ||
-    //   Object.getPrototypeOf(payload).constructor.name === 'Object'
     const t = typeof payload
     const stringify =
-      t === 'undefined' ||
-      t === 'string' ||
       t === 'number' ||
       Array.isArray(payload) ||
-      (t === 'object' && payload.constructor === Object)
+      payload?.constructor === Object
 
     const jsonHeaders = stringify ? { 'content-type': 'application/json' } : undefined
 

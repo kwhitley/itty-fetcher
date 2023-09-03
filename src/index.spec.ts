@@ -52,7 +52,7 @@ describe('fetcher', () => {
         expect(custom_fetch).toBeCalledWith('/foo', {
           method: 'GET',
           body: undefined,
-          headers: { 'content-type': 'application/json' },
+          headers: {},
         })
       })
     })
