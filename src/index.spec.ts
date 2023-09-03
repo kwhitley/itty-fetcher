@@ -59,7 +59,23 @@ describe('fetcher', () => {
   })
 
   describe('error handling', () => {
-    it('will throw on error response', async () => {
+    it('without response body', async () => {
+      fetchMock.get('/', { status: 404 })
+      const response: any = await fetcher().get('/').catch(e => e)
+
+      expect(response.status).toBe(404)
+      expect(response.message).toBe('Not Found')
+    })
+
+    it('with text response body', async () => {
+      fetchMock.get('/', { status: 404, body: RANDOM_STRING })
+      const response: any = await fetcher().get('/').catch(e => e)
+
+      expect(response.status).toBe(404)
+      expect(response.message).toBe(RANDOM_STRING)
+    })
+
+    it('with JSON response body', async () => {
       fetchMock.get('/', {
         status: 404,
         body: { error: 'Not Found', details: RANDOM_STRING },
@@ -68,23 +84,9 @@ describe('fetcher', () => {
       const catchError = vi.fn(e => e)
       const response: any = await fetcher().get('/').catch(catchError)
 
-      expect(catchError).toHaveBeenCalled()
       expect(response.status).toBe(404)
-      // expect(typeof response.response).toBe('object')
       expect(response.details).toBe(RANDOM_STRING)
       expect(response.error).toBe('Not Found')
-    })
-
-    it('will handle text error responses', async () => {
-      fetchMock.get('/', {
-        status: 404,
-        body: RANDOM_STRING,
-      })
-      const catchError = vi.fn(e => e)
-      const response: any = await fetcher().get('/').catch(catchError)
-
-      expect(response.status).toBe(404)
-      expect(response.message).toBe(RANDOM_STRING)
     })
   })
 
