@@ -1,9 +1,18 @@
 export class StatusError extends Error {
   status: number
+  #$r: Response
 
   constructor(status = 500, message = 'Internal Error.') {
     super(message)
     this.status = status
+  }
+
+  get response() {
+    return this.#$r
+  }
+
+  set $r(r) {
+    this.#$r = r
   }
 }
 
@@ -53,7 +62,7 @@ export type FetchyOptions = { method: string } & FetcherOptions
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
   async (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
-    const method = options.method.toUpperCase()
+
 
     /**
      * If the request is a `.get(...)` then we want to pass the payload
@@ -67,40 +76,48 @@ const fetchy =
      * We clear the payload after this so that it doesn't get passed to the body.
      */
     // let url = new URL(url_or_path)
+
+    const method = options.method.toUpperCase();
     let search = ''
 
     if (method === 'GET' && payload && typeof payload === 'object') {
+        const merged = new URLSearchParams(url_or_path.split('?')[0])
 
-      const query = url_or_path.split('?')[0] || ''
-      const merged = new URLSearchParams(query)
+        const entries = payload instanceof URLSearchParams
+            // @ts-expect-error - ignore this
+            ? Array.from(payload.entries())
+            : Object.entries(payload)
 
-      const entries = payload instanceof URLSearchParams
-      // @ts-expect-error - ignore this
-      ? Array.from(payload.entries())
-      : Object.entries(payload)
+        // @ts-expect-error - ignore this
+        for (const [key, value] of entries) {
+            merged.append(key, value)
+        }
 
-      // @ts-expect-error - ignore this
-      for (const [key, value] of entries) {
-        merged.append(key, value)
-      }
-
-      search = merged.toString() ? '?' + merged : ''
-      payload = undefined
-
+        search = merged.toString() ? '?' + merged : ''
+        payload = undefined
     }
 
     const full_url = (options.base || '') + url_or_path + search
+
 
     /**
      * If the payload is a POJO, an array or a string, we will stringify it
      * automatically, otherwise we will pass it through as-is.
      */
+
+    // const stringify =
+    //   typeof payload === 'undefined' ||
+    //   typeof payload === 'string' ||
+    //   typeof payload === 'number' ||
+    //   Array.isArray(payload) ||
+    //   Object.getPrototypeOf(payload).constructor.name === 'Object'
+    const t = typeof payload;
     const stringify =
-      typeof payload === 'undefined' ||
-      typeof payload === 'string' ||
-      typeof payload === 'number' ||
+      !payload ||
+      t === 'string' ||
+      t === 'number' ||
       Array.isArray(payload) ||
-      Object.getPrototypeOf(payload).constructor.name === 'Object'
+      (t === 'object' && payload.constructor === Object)
 
     const jsonHeaders = stringify ? { 'content-type': 'application/json' } : undefined
 
@@ -125,31 +142,25 @@ const fetchy =
 
     const { url, ...init } = req
 
-    const f = typeof options?.fetch === 'function' ? options.fetch : fetch
+    const f = options?.fetch || fetch
     let error
 
-    return f(url, init).then((response) => {
-      if (options.handleResponse)
-        return options.handleResponse(response)
+    return f(url, init).then(async (response) => {
+      if (options.handleResponse) return options.handleResponse(response);
 
       if (!response.ok) {
-        error = new StatusError(response.status, response.statusText)
-        error.response = response
-      }
+        error = new StatusError(response.status, response.statusText);
+        error.$r = response;
+      } else if (!options.autoParse) return response;
 
-      if (!options.autoParse) return error || response
-
-      const contentType = response.headers.get('content-type')
-
-      const content =  contentType?.includes('json')
-                        ? response.json()
-                        : response.text()
+      const content = await (response.headers.get('content-type')?.includes('json') ? response.json() : response.text());
 
       if (error) {
-        throw Object.assign(error, typeof content === 'object' ? content : { message: content })
+        Object.assign(error, typeof content === 'object' ? content : { message: content || error.message });
+        throw error;
       }
 
-      return content
+      return content;
     })
   }
 
@@ -158,16 +169,10 @@ export function fetcher(fetcherOptions?: FetcherOptions) {
     {
       base: '',
       autoParse: true,
-      ...fetcherOptions,
+      ...fetcherOptions
     },
     {
-      get: (obj, prop: string) =>
-        obj[prop] !== undefined
-          ? obj[prop]
-          : fetchy({
-              method: prop,
-              ...obj,
-            }),
-    },
+      get: (obj, prop: string) => obj[prop] ?? fetchy({ method: prop, ...obj })
+    }
   )
 }

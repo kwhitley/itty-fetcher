@@ -3,6 +3,8 @@ import 'isomorphic-fetch'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FetcherOptions, RequestPayload, fetcher } from './index'
 
+const RANDOM_STRING = String(Math.random())
+
 describe('fetcher', () => {
   beforeEach(() => {
     fetchMock.reset()
@@ -53,6 +55,36 @@ describe('fetcher', () => {
           headers: { 'content-type': 'application/json' },
         })
       })
+    })
+  })
+
+  describe('error handling', () => {
+    it('will throw on error response', async () => {
+      fetchMock.get('/', {
+        status: 404,
+        body: { error: 'Not Found', details: RANDOM_STRING },
+        headers: { 'content-type': 'application/json' },
+      })
+      const catchError = vi.fn(e => e)
+      const response: any = await fetcher().get('/').catch(catchError)
+
+      expect(catchError).toHaveBeenCalled()
+      expect(response.status).toBe(404)
+      expect(typeof response.response).toBe('object')
+      expect(response.details).toBe(RANDOM_STRING)
+      expect(response.error).toBe('Not Found')
+    })
+
+    it('will handle text error responses', async () => {
+      fetchMock.get('/', {
+        status: 404,
+        body: RANDOM_STRING,
+      })
+      const catchError = vi.fn(e => e)
+      const response: any = await fetcher().get('/').catch(catchError)
+
+      expect(response.status).toBe(404)
+      expect(response.message).toBe(RANDOM_STRING)
     })
   })
 
@@ -174,7 +206,6 @@ describe('fetcher', () => {
         status: 500,
         expected: { error: 'Internal Server Error' },
       },
-
       // global headers
       'can set a header via global options as well as per-route overrides': {
         url: '/foo',
@@ -304,6 +335,11 @@ describe('fetcher', () => {
         if (expected.error && status) {
           fetchMock.mock(full_url, status)
           await expect(fetcher(options)[method](url, payload, init)).rejects.toThrow(expected.error)
+
+          if (expected.response) {
+            const getError = vi.fn(({ response, ...err }) => ({ ...err }))
+            await expect(getError).toHaveReturnedWith(expected.response)
+          }
           return
         }
 
@@ -374,11 +410,16 @@ function create_mock_url({
   // query params in the URL. To do this, we need to evaluate the payload
   // and add it to the URL.
   if (method === 'get' && payload && typeof payload === 'object' && !options?.transformRequest) {
-    const url = new URL(mock_url)
-    url.search = (
-      payload instanceof URLSearchParams ? payload : params_from_object(payload)
-    ).toString()
-    mock_url = url.toString()
+    try {
+      const url = new URL(mock_url)
+      url.search = (
+        payload instanceof URLSearchParams ? payload : params_from_object(payload)
+      ).toString()
+      mock_url = url.toString()
+    } catch (err) {
+      console.error(`Could not create url from ${mock_url}.`)
+    }
   }
+
   return mock_url
 }
