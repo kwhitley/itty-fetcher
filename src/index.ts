@@ -62,8 +62,6 @@ export type FetchyOptions = { method: string } & FetcherOptions
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
   async (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
-
-
     /**
      * If the request is a `.get(...)` then we want to pass the payload
      * to the URL as query params as passing data in the body is not
@@ -82,23 +80,15 @@ const fetchy =
 
     if (method === 'GET' && payload && typeof payload === 'object') {
         const merged = new URLSearchParams(url_or_path.split('?')[0])
+        // @ts-expect-error we don't care about this
+        const entries = (payload instanceof URLSearchParams ? payload : new URLSearchParams(payload)).entries()
 
-        const entries = payload instanceof URLSearchParams
-            // @ts-expect-error - ignore this
-            ? Array.from(payload.entries())
-            : Object.entries(payload)
-
-        // @ts-expect-error - ignore this
-        for (const [key, value] of entries) {
-            merged.append(key, value)
-        }
-
+        for (const [key, value] of entries) merged.append(key, value)
         search = merged.toString() ? '?' + merged : ''
         payload = undefined
     }
 
     const full_url = (options.base || '') + url_or_path + search
-
 
     /**
      * If the payload is a POJO, an array or a string, we will stringify it
