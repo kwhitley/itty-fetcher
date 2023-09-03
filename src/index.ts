@@ -74,9 +74,9 @@ const fetchy =
 
         // @ts-expect-error ignore this
         const entries = (payload instanceof URLSearchParams ? payload : new URLSearchParams(payload)).entries()
-        for (const [key, value] of entries) merged.append(key, value)
+        for (let [key, value] of entries) merged.append(key, value)
 
-        queryParams = merged.toString() ? '?' + merged : ''
+        queryParams = '?' + merged.toString()
         payload = null
     }
 
