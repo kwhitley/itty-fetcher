@@ -124,7 +124,6 @@ const fetchy =
 
       if (!response.ok) {
         error = new StatusError(response.status, response.statusText)
-        // error.$r = response
       } else if (!options.autoParse) return response
 
       const content = await (response.headers.get('content-type')?.includes('json') ? response.json() : response.text())
