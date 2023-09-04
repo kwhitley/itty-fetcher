@@ -25,7 +25,7 @@ export type RequestPayload = StringifyPayload | PassThroughPayload
 export interface FetcherOptions {
   base?: string
   autoParse?: boolean
-  transformRequest?: (request: RequestLike) => RequestLike
+  transformRequest?: (request: RequestLike) => RequestLike | Promise<RequestLike>
   handleResponse?: (response: Response) => any
   fetch?: typeof fetch
   headers?: Record<string, string>

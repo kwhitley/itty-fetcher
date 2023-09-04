@@ -56,6 +56,34 @@ describe('fetcher', () => {
         })
       })
     })
+
+    describe('transformRequest', () => {
+      it('can modify the request before sending', async () => {
+        fetchMock.get('/', { status: 200, body: 'Success' })
+
+        const transformRequest = vi.fn(r => {
+          r.url = '/'
+          return r
+        })
+        const response = await fetcher({ transformRequest }).get('/foo')
+
+        expect(transformRequest).toHaveBeenCalled()
+        expect(response).toBe('Success')
+      })
+
+      it('can take an async function', async () => {
+        fetchMock.get('/', { status: 200, body: 'Success' })
+
+        const transformRequest = async (r) => {
+          r.url = await '/'
+          return r
+        }
+
+        const response = await fetcher({ transformRequest }).get('/foo')
+
+        expect(response).toBe('Success')
+      })
+    })
   })
 
   describe('error handling', () => {
