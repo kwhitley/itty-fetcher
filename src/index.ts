@@ -25,8 +25,8 @@ export type RequestPayload = StringifyPayload | PassThroughPayload
 export interface FetcherOptions {
   base?: string
   autoParse?: boolean
-  transformRequest?: (request: RequestLike) => RequestLike,
-  handleResponse?: (response: Response) => any,
+  transformRequest?: (request: RequestLike) => RequestLike | Promise<RequestLike>
+  handleResponse?: (response: Response) => any
   fetch?: typeof fetch
   headers?: Record<string, string>
 }
@@ -52,9 +52,7 @@ export type FetchyOptions = { method: string } & FetcherOptions
 
 const fetchy =
   (options: FetchyOptions): FetchyFunction =>
-  (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
-    const method = options.method.toUpperCase()
-
+  async (url_or_path: string, payload?: RequestPayload, fetchOptions?: FetchOptions) => {
     /**
      * If the request is a `.get(...)` then we want to pass the payload
      * to the URL as query params as passing data in the body is not
@@ -67,40 +65,33 @@ const fetchy =
      * We clear the payload after this so that it doesn't get passed to the body.
      */
     // let url = new URL(url_or_path)
-    let search = ''
+
+    const method = options.method.toUpperCase()
+    let [urlBase, queryParams = ''] = url_or_path.split('?')
 
     if (method === 'GET' && payload && typeof payload === 'object') {
+        const merged = new URLSearchParams(queryParams)
 
-      const query = url_or_path.split('?')[0] || ''
-      const merged = new URLSearchParams(query)
+        // @ts-expect-error ignore this
+        const entries = (payload instanceof URLSearchParams ? payload : new URLSearchParams(payload)).entries()
+        for (let [key, value] of entries) merged.append(key, value)
 
-      const entries = payload instanceof URLSearchParams
-      // @ts-expect-error - ignore this
-      ? Array.from(payload.entries())
-      : Object.entries(payload)
-
-      // @ts-expect-error - ignore this
-      for (const [key, value] of entries) {
-        merged.append(key, value)
-      }
-
-      search = merged.toString() ? '?' + merged : ''
-      payload = undefined
-
+        queryParams = '?' + merged.toString()
+        payload = null
     }
 
-    const full_url = (options.base || '') + url_or_path + search
+    const full_url = (options.base || '') + urlBase + queryParams
 
     /**
      * If the payload is a POJO, an array or a string, we will stringify it
      * automatically, otherwise we will pass it through as-is.
      */
+
+    const t = typeof payload
     const stringify =
-      typeof payload === 'undefined' ||
-      typeof payload === 'string' ||
-      typeof payload === 'number' ||
+      t === 'number' ||
       Array.isArray(payload) ||
-      Object.getPrototypeOf(payload).constructor.name === 'Object'
+      payload?.constructor === Object
 
     const jsonHeaders = stringify ? { 'content-type': 'application/json' } : undefined
 
@@ -121,27 +112,28 @@ const fetchy =
      * in the options. This allows the user to modify the request before it is
      * sent.
      */
-    if (options.transformRequest) req = options.transformRequest(req)
+    if (options.transformRequest) req = await options.transformRequest(req)
 
     const { url, ...init } = req
 
-    const f = typeof options?.fetch === 'function' ? options.fetch : fetch
+    const f = options?.fetch || fetch
+    let error
 
-    return f(url, init).then((response) => {
-      if (options.handleResponse)
-        return options.handleResponse(response)
+    return f(url, init).then(async (response) => {
+      if (options.handleResponse) return options.handleResponse(response)
 
       if (!response.ok) {
-        throw new StatusError(response.status, response.statusText)
+        error = new StatusError(response.status, response.statusText)
+      } else if (!options.autoParse) return response
+
+      const content = await (response.headers.get('content-type')?.includes('json') ? response.json() : response.text())
+
+      if (error) {
+        Object.assign(error, typeof content === 'object' ? content : { message: content || error.message })
+        throw error
       }
 
-      if (!options.autoParse) return response
-
-      const contentType = response.headers.get('content-type')
-
-      return contentType?.includes('json')
-              ? response.json()
-              : response.text()
+      return content
     })
   }
 
@@ -150,16 +142,10 @@ export function fetcher(fetcherOptions?: FetcherOptions) {
     {
       base: '',
       autoParse: true,
-      ...fetcherOptions,
+      ...fetcherOptions
     },
     {
-      get: (obj, prop: string) =>
-        obj[prop] !== undefined
-          ? obj[prop]
-          : fetchy({
-              method: prop,
-              ...obj,
-            }),
-    },
+      get: (obj, prop: string) => obj[prop] ?? fetchy({ method: prop, ...obj })
+    }
   )
 }
