@@ -47,7 +47,7 @@
 
 ---
 
-> # it's just native fetch, but easier.
+> ## &ldquo;it's just native fetch, but easier.&rdquo;
 > <cite>~ probably someone</cite>
 
 # Features
