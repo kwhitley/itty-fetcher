@@ -1,66 +1,162 @@
-# ![itty-fetcher](https://user-images.githubusercontent.com/865416/189512292-3d877e9b-5ae6-4ccb-aba6-9602ee5a7578.png)
+<p align="center">
+  <a href="https://itty.dev/itty-fetcher">
+     <img src="https://user-images.githubusercontent.com/865416/189512292-3d877e9b-5ae6-4ccb-aba6-9602ee5a7578.png" alt="Itty Router" />
+  </a>
+<p>
+  
+<br /></h2>
 
-[![Version](https://img.shields.io/npm/v/itty-fetcher.svg?style=flat-square)](https://npmjs.com/package/itty-fetcher)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/itty-fetcher?style=flat-square)](https://bundlephobia.com/result?p=itty-fetcher)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/kwhitley/itty-fetcher/verify.yml?branch=v0.x&style=flat-square)](https://github.com/kwhitley/itty-router/actions/workflows/verify.yml)
-[![Coverage Status](https://img.shields.io/coveralls/github/kwhitley/itty-fetcher/v0.x?style=flat-square)](https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x)
-[![NPM Weekly Downloads](https://img.shields.io/npm/dw/itty-fetcher?style=flat-square)](https://npmjs.com/package/itty-fetcher)
-[![Open Issues](https://img.shields.io/github/issues/kwhitley/itty-fetcher?style=flat-square)](https://github.com/kwhitley/itty-fetcher/issues)
+<p align="center">
+  <a href="https://npmjs.com/package/itty-fetcher" target="_blank">
+    <img src="https://img.shields.io/npm/v/itty-fetcher.svg?style=flat-square" alt="npm version" />
+  </a>
+  <a href="https://deno.bundlejs.com/?q=itty-fetcher" target="_blank">
+    <img src="https://deno.bundlejs.com/?q=itty-fetcher&badge&badge-style=flat-square" alt="bundle size" />
+  </a>
+  <a href="https://github.com/kwhitley/itty-fetcher/actions/workflows/verify.yml" target="_blank">
+    <img src="https://img.shields.io/github/actions/workflow/status/kwhitley/itty-fetcher/verify.yml?branch=v0.x&style=flat-square" alt="build status" />
+  </a>
+  <a href="https://coveralls.io/github/kwhitley/itty-fetcher?branch=v0.x" target="_blank">
+    <img src="https://img.shields.io/coveralls/github/kwhitley/itty-fetcher/v0.x?style=flat-square" alt="code coverage" />
+  </a>
+  <a href="https://npmjs.com/package/itty-fetcher" target="_blank">
+    <img src="https://img.shields.io/npm/dw/itty-fetcher?style=flat-square" alt="weekly downloads" />
+  </a>
+  <a href="https://github.com/kwhitley/itty-fetcher/issues" target="_blank">
+    <img src="https://img.shields.io/github/issues/kwhitley/itty-fetcher?style=flat-square" alt="open issues" />
+  </a>
+  <a href="" target="_blank">
+    <img src="" alt="" />
+  </a>
+</p>
 
-[![Discord](https://img.shields.io/discord/832353585802903572?style=flat-square)](https://discord.gg/WQnqAsjhd6)
-[![GitHub Repo stars](https://img.shields.io/github/stars/kwhitley/itty-fetcher?style=social)](https://github.com/kwhitley/itty-fetcher)
-[![Twitter](https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow)](https://www.twitter.com/kevinrwhitley)
+<p align="center">
+  <a href="https://discord.gg/WQnqAsjhd6" target="_blank">
+    <img src="https://img.shields.io/discord/832353585802903572?label=Discord&logo=Discord&style=flat-square&logoColor=fff" alt="join us on discord" />
+  </a>
+  <a href="https://github.com/kwhitley/itty-fetcher" target="_blank">
+    <img src="https://img.shields.io/github/stars/kwhitley/itty-fetcher?style=social" alt="repo stars" />
+  </a>
+  <a href="https://www.twitter.com/kevinrwhitley" target="_blank">
+    <img src="https://img.shields.io/twitter/follow/kevinrwhitley.svg?style=social&label=Follow" alt="follow the author" />
+  </a>
+  <a href="" target="_blank">
+    <img src="" alt="" />
+  </a>
+</p>
 
-Tiny (~600 bytes) wrapper to simplify native `fetch` calls using _any_ HTTP method (existing or imagined).
+---
 
-## Features
+> # it's just native fetch, but easier.
+> <cite>~ probably someone</cite>
 
+# Features
+
+- Ultra tiny (~700 bytes)
+- Uses native fetch, but lets you skip the boilerplate:
+  - Parses responses
+  - Serializes object payloads
+- Actually throws HTTP status errors (unlike native fetch)
+- 100% native fetch options
 - Fully typed/TypeScript support
-- Automatically parses responses (optional)
-- Automatically serializes object payloads
-- Accepts _any_ HTTP method (including user-defined)
-- 404, 400, 500, errors actually throw to allow easier catching
-- Still allows any native fetch options (including headers, etc) to be sent
-- allows full takeover of the Response chain/error-handling
 
-## Simple Usage
+# Installation
+```
+npm install itty-fetcher
+```
+
+then...
 
 ```js
 import { fetcher } from 'itty-fetcher'
-
-// create a basic fetcher with default options
-const basics = fetcher()
-
-// skips the body parsing for normal GET requests
-await basics.get('https://api.kittens.com/v1/names/?max=2') // ['Fluffy', 'Mittens']
-
-// set a base for simplifying repeated calls
-const api = fetcher({ base: 'https://api.kittens.com/v1' })
-
-// then use it... base will be prepended to urls
-await api.get('/names/?max=2') // ['Fluffy', 'Mittens']
-
-// automatic handle sending payloads (no need to stringify and set headers)
-await api.post('/create-a-cat', { name: 'Halsey', age: 3 }) // { id: 'Q4AW', name: 'Halsey', age: 3 }
-
-// use any conceivable HTTP method
-api.put('/kitten/13', { name: 'Different Cat' }) // sends using PUT method
-api.foo('/kitten/13', { name: 'Different Cat' }) // sends using FOO method
-
-// supports GET query params
-await api.get('/names', { max: 2, foo: ['bar', 'baz'] })
-// GET https://api.kittens.com/v1/names?max=2&foo=bar&foo=baz
-
-// send files/blobs directly
-await api.post('/upload', new Blob(['some text'], { type: 'plain/text' }))
-
-// ERROR HANDLING: 400, 404, 500, etc will actually throw, allowing an easy catch
-api
-  .get('/not-a-valid-path')
-  .catch(({ status, message }) => {
-    console.log('received a status', status, 'error with message:', message)
-  })
 ```
+
+# Examples
+
+## GET - fetcher vs. fetch
+```js
+// itty-fetcher
+const kittens = await fetcher().get('https://api.kittens.com')
+
+
+// native fetch
+const kittens = await fetch('https://api.kittens.com').then(response => response.json())
+```
+
+## POST - fetcher vs. fetch
+```js
+// itty-fetcher
+await fetcher().post('https://api.kittens.com', ['Fluffy', 'Mittens', 'Halsey'])
+
+
+// native fetch
+await fetch('https://api.kittens.com', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application-json',
+  },
+  body: JSON.stringify(['Fluffy', 'Mittens', 'Halsey']),
+})
+```
+
+## Preconfigure your API
+```ts
+// define your base fetcher
+const kittensAPI = fetcher({
+                     base: 'https://api.kittens.com',
+                     headers: {
+                       'Authorization': 'Token FooBarBaz',
+                     }
+                   })
+
+// then call it!
+const names = await kittensAPI.get('/names')
+```
+
+## Error Handling - fetcher vs. fetch
+```js
+// itty-fetcher
+const data = await fetcher()
+                     .get('https://api.kittens.com')
+                     .catch(({ status, error }) => {
+                       console.error(`Error code ${status}: ${error}`)
+                     })
+
+
+// or to capture the error
+const { error, data } = await fetcher()
+                                .get('https://api.kittens.com')
+                                .then(data => ({ data }))
+                                .catch(error => ({ error }))
+
+
+// native fetch
+const data = await fetch('https://api.kittens.com')
+                     .then(response => {
+                       if (!response.ok) {
+                         const error = new Error(response.statusText)
+                         error.status = response.status
+                         throw error
+                       }
+                     })
+                     .then(response => response.json())
+                     .catch(({ status, error }) => {
+                       console.error(`Error code ${status}: ${error}`)
+                     })
+```
+
+## Use any native fetch options (passthrough)
+```ts
+await fetcher()
+        .post('https://api.kittens.com', { foo: 'bar' }, {
+          credentials: 'same-origin',
+          headers: {
+            'Authorization': 'Token FooBarBaz',
+          },
+        })
+```
+
+---
 
 ## Why yet another fetching library?
 
@@ -76,39 +172,13 @@ Why, we write a little abstraction layer of course! Just like this one, but prob
 
 ## So who is this for?
 
-This is not a kitchen-sink sort of library. It will intentionally **not** cover every edge case. By only handling a variety of the **most common** use-cases, I can keep the bundle size down to [likely] smaller than the code you would have written yourself, making it a no-brainer for easy inclusion into your projects.
+This is not a kitchen-sink sort of library. It will intentionally **not** cover every edge case. By only handling a variety of the **most common** use-cases, we can keep the bundle size down to [likely] smaller than the code you would have written yourself, making it a no-brainer for easy inclusion into your projects.
 
-Need more advanced fetch handling? Perhaps try a different library (or stick to native fetch and handle the edge case manually)!
+Need more advanced fetch handling? Perhaps try a different library!
 
 ## Notes
 
 itty-fetcher wraps the existing native `fetch` method, so it will work in any environment that supports `fetch` (including modern web browsers, Cloudflare Workers/Pages, SvelteKit, and Node v18+). Note that we depend on web APIs including `Request`, `FormData` and `URL`. Almost all environments that support `fetch` will also support these APIs, but if you need to support older browsers or other environements, you may need to include a polyfill. Note if you're using Node you need to be running v18 or newer.
-
-Want to use itty-fetecher in your SvelteKit `load` functions while using the `fetch` implementation passed in via `load`? Check out [this example by Rich Harris](https://twitter.com/Rich_Harris/status/1577375645977362432) of how to do it.
-
-## Advanced usage
-
-```js
-// skipping autoParse returns full Response control
-const unparsed = fetcher({ autoParse: false })
-
-unparsed.get('https://api.kittens.com/v1/names/?max=2').then((response) => {
-  if (response.ok) return response.json()
-})
-
-// can send all native fetch options through in 3rd param
-fetcher().post(
-  'https://api.kittens.com/v1/names/?max=2',
-  { payload: 'is second param' },
-  {
-    credentials: 'same-origin',
-    cache: 'no-cache',
-    headers: {
-      ['my-fancy-header']: 'will be sent',
-    },
-  },
-)
-```
 
 # API
 
