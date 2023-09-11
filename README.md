@@ -1,11 +1,9 @@
 <p align="center">
   <a href="https://itty.dev/itty-fetcher">
-     <img src="https://user-images.githubusercontent.com/865416/189512292-3d877e9b-5ae6-4ccb-aba6-9602ee5a7578.png" alt="Itty Router" />
+     <img src="https://github.com/kwhitley/itty-fetcher/assets/865416/0b70e747-fabf-43ef-87f8-ce14b387ea0e" alt="Itty Router" />
   </a>
 <p>
   
-<br /></h2>
-
 <p align="center">
   <a href="https://npmjs.com/package/itty-fetcher" target="_blank">
     <img src="https://img.shields.io/npm/v/itty-fetcher.svg?style=flat-square" alt="npm version" />
