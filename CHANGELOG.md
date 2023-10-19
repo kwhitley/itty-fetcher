@@ -1,6 +1,7 @@
 ## Changelog
 Until this library makes it to a production release of v1.x, **minor versions may contain breaking changes to the API**.  After v1.x, semantic versioning will be honored, and breaking changes will only occur under the umbrella of a major version bump.
 
+- **v0.9.4** - fixes bug where non-GET endpoints could not have query string in the URL
 - **v0.9.0** - JSON errors are now assigned to the thrown error (for downstream catches), now allows async transformRequest, several bug fixes
 - **v0.8.2** - fixes duplicate query ? bug on GET requests with param objects, switches build to rollup to match itty-router
 - **v0.8.0** - adds StatusError class (and status to thrown !response.ok Errors), and handleResponse fetcher option.

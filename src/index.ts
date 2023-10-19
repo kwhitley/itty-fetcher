@@ -66,7 +66,11 @@ const fetchy =
      */
     // let url = new URL(url_or_path)
 
-    const method = options.method.toUpperCase()
+    let { base = '', method } = options
+    method = method.toUpperCase()
+
+    // const method = options.method.toUpperCase()
+    let full_url = (options.base || '')
     let [urlBase, queryParams = ''] = url_or_path.split('?')
 
     if (method === 'GET' && payload && typeof payload === 'object') {
@@ -76,11 +80,11 @@ const fetchy =
         const entries = (payload instanceof URLSearchParams ? payload : new URLSearchParams(payload)).entries()
         for (let [key, value] of entries) merged.append(key, value)
 
-        queryParams = '?' + merged.toString()
         payload = null
+        full_url += urlBase + '?' + merged.toString()
+    } else {
+      full_url += url_or_path
     }
-
-    const full_url = (options.base || '') + urlBase + queryParams
 
     /**
      * If the payload is a POJO, an array or a string, we will stringify it

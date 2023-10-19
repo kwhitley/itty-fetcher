@@ -277,6 +277,15 @@ describe('fetcher', () => {
         },
         expected: { url: base + '/?message=hello+world' },
       },
+      'query works with non-GET (e.g. POST) endpoints': {
+        method: 'post',
+        url: '/somewhere?foo=bar',
+        payload: 'Hello World.',
+        expected: {
+          url: '/somewhere?foo=bar',
+          body: 'Hello World.',
+        },
+      },
       'combines query params from the URL and the payload (object)': {
         url: '/somewhere?foo=10',
         payload: { foo: 12, bar: 'baz' },
