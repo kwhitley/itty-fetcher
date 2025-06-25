@@ -18,14 +18,22 @@ const handleRequest = async (
   headers = new Headers(headers)
 
   // Golf: Ultra-minimal URL - attempt 5
-  let url = new URL((f=>f&&(~f.indexOf('http')||~base.indexOf('http'))?f:'http://localhost'+(f[0]=='/'?f:'/'+f))(~childBase.indexOf('http')?childBase:base+(base.slice(-1)=='/'&&childBase[0]=='/'?childBase.slice(1):childBase)))
+  let url = new URL((f => f && (~f.indexOf('http') || ~base.indexOf('http')) 
+    ? f 
+    : 'http://localhost' + (f[0] == '/' ? f : '/' + f)
+  )(~childBase.indexOf('http') 
+    ? childBase 
+    : base + (base.slice(-1) == '/' && childBase[0] == '/' ? childBase.slice(1) : childBase)
+  ))
 
   // Golf: For loop instead of forEach
   for (let [k, v] of Object.entries(options.query || {})) url.searchParams.append(k, v as string)
 
   // Golf: Compact payload handling with comma operator
   payload && (
-    options.body = options.encode === false ? payload : (typeof payload == 'string' ? payload : JSON.stringify(payload)),
+    options.body = options.encode === false 
+      ? payload 
+      : (typeof payload == 'string' ? payload : JSON.stringify(payload)),
     options.encode !== false && typeof payload != 'string' && headers.set('content-type', 'application/json')
   )
 
@@ -38,10 +46,16 @@ const handleRequest = async (
   !response.ok && (error = Object.assign(new Error(response.statusText), { status: response.status }))
 
   // Golf: Compact parsing
-  options.parse !== false && (response = await (response.headers.get('content-type')?.includes('json') ? response.json() : response.text()))
+  options.parse !== false && (response = await (
+    response.headers.get('content-type')?.includes('json') 
+      ? response.json() 
+      : response.text()
+  ))
 
   // Golf: Early return for errors
-  if (error) return options.onError ? options.onError(error, response) : Promise.reject(error)
+  if (error) return options.onError 
+    ? options.onError(error, response) 
+    : Promise.reject(error)
 
   // Golf: Compact after handlers - only transform if handler returns non-undefined
   for (let handler of options.after || []) {
@@ -56,7 +70,9 @@ const handleRequest = async (
 export const fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject,
-  options = typeof optionsOrBase == 'string' ? { base: optionsOrBase, ...additionalOptions } : optionsOrBase || {},
+  options = typeof optionsOrBase == 'string' 
+    ? { base: optionsOrBase, ...additionalOptions } 
+    : optionsOrBase || {},
   {
     base = typeof window !== 'undefined' ? window?.location?.origin ?? '' : '',
     headers = {},
@@ -66,5 +82,7 @@ export const fetcher = (
   // @ts-ignore
   new Proxy((...args: any) => fetcher(...args), {
     // @ts-ignore
-    get: (obj, method: any) => obj[method] ?? ((...args) => handleRequest(method, args, restOptions, base as string, headers))
+    get: (obj, method: any) => obj[method] ?? ((...args) => 
+      handleRequest(method, args, restOptions, base as string, headers)
+    )
   })
