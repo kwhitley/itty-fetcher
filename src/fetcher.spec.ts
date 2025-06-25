@@ -1,146 +1,414 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, afterAll, expect, it, mock } from 'bun:test'
 import { fetcher } from './fetcher'
+import type { Fetcher } from './types'
 
-const OBJECT = { foo: 'bar' }
-const STRINGIFIED_OBJECT = JSON.stringify(OBJECT)
-const TEXT = 'FooBarBaz'
+type TestLeaf = (args: {
+  fetcherInstance: Fetcher,
+  resolve: () => void,
+  spy: () => void,
+  getFetcher: (options?: any) => Fetcher
+}) => void
 
-const withSpies = (...spies) => (request) => {
-  for (const spy of spies) {
-    spy(request)
-  }
-
-  return Promise.resolve(new Response(STRINGIFIED_OBJECT, {
-    headers: { 'content-type': 'application/json' }
-  }))
+type TestTree = {
+  [key: string]: TestTree | TestLeaf
 }
 
-const return404 = () =>
+const MOCK_OBJECT = { foo: 'bar' }
+const MOCK_TEXT = 'FooBarBaz'
+const STRINGIFIED_OBJECT = JSON.stringify(MOCK_OBJECT)
+
+const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete']
+
+const createMockFetch = (...spies: ((request: Request) => any)[]) => {
+  return mock((request: Request) => {
+    spies.forEach(spy => spy(request))
+    return Promise.resolve(new Response(STRINGIFIED_OBJECT, {
+      headers: { 'content-type': 'application/json' }
+    }))
+  })
+}
+
+const create404Response = () =>
   Promise.resolve(new Response(null, { status: 404 }))
 
-const return404WithBody = () =>
-  Promise.resolve(new Response(JSON.stringify({ status: 404, error: 'Are you sure about that?' }), {
+const create404WithBodyResponse = () =>
+  Promise.resolve(new Response(JSON.stringify({ status: 404, error: 'Not found' }), {
     headers: { 'content-type': 'application/json' },
     status: 404,
   }))
 
-const fetchText = (spy) => (request) => {
+const createTextResponse = (spy: (request: Request) => any) => (request: Request) => {
   spy(request)
-
-  return Promise.resolve(new Response(TEXT))
+  return Promise.resolve(new Response(MOCK_TEXT))
 }
 
-describe('fetcher', () => {
-  it('fetcher.post() => calls a request with method POST', async () => {
-    const spy = vi.fn(r => r.method)
-
-    const response = await fetcher({ fetch: withSpies(spy) }).post(OBJECT)
-    expect(spy).toHaveReturnedWith('POST')
-    expect(response).toEqual(OBJECT)
-  })
-
-  it('fetcher({ base }).get() => prepends base to path', async () => {
-    const spy = vi.fn(r => r.url)
-
-    await fetcher({ base: 'https:foo.bar', fetch: withSpies(spy) }).post()
-    expect(spy).toHaveReturnedWith('https://foo.bar/')
-  })
-
-  it('fetcher({ headers: {} }).get() => appends headers to request', async () => {
-    const spy = vi.fn(r => r.headers.get('foo'))
-
-    await fetcher({
-      base: 'https://foo.bar',
-      fetch: withSpies(spy),
-      headers: { foo: 'bar' },
-    }).get('/cats')
-    expect(spy).toHaveReturnedWith('bar')
-  })
-
-  it('fetcher({ query: {} }).get({ query: {} }) => appends query to request', async () => {
-    const spy = vi.fn(r => {
-      let url = new URL(r.url)
-
-      return Object.fromEntries(url.searchParams.entries())
-    })
-
-    await fetcher({
-      base: 'https://foo.bar?foo=bar',
-      fetch: withSpies(spy),
-    }).get({ query: { page: 2 }})
-    expect(spy).toHaveReturnedWith({ foo: 'bar', page: '2' })
-  })
-
-  it('fetcher({ headers: {} }).get() => appends headers to request', async () => {
-    const spy = vi.fn(r => [...r.headers.entries()])
-    const headers = new Headers()
-    headers.append('foo', 'bar')
-
-    await fetcher({
-      base: 'https:foo.bar',
-      fetch: withSpies(spy),
-      headers,
-    }).get('/cats')
-    expect(spy).toHaveReturnedWith([
-      ['foo', 'bar']
-    ])
-  })
-
-  it('fetcher({ headers }).get({ headers }) => blends base headers with final ones', async () => {
-    const spy = vi.fn(r => [...r.headers.entries()])
-    const headers = new Headers()
-    headers.append('foo', 'bar')
-
-    await fetcher({
-      base: 'https:foo.bar',
-      fetch: withSpies(spy),
-      headers: { foo: 'bar', cat: 'dog' },
-    }).get('/cats', {
-      headers: { foo: 'baz' }
-    })
-    expect(spy).toHaveReturnedWith([
-      ['cat', 'dog'],
-      ['foo', 'baz'],
-    ])
-  })
-
-  it('fetcher({ headers }).get({ headers }) => blends base headers with final ones', async () => {
-    const spy = vi.fn(r => r.url)
-
-    await fetcher({
-      base: 'https:foo.bar',
-      fetch: withSpies(spy),
-    }).get()
-    expect(spy).toHaveReturnedWith('https://foo.bar/')
-  })
-
-  it('fetcher({ headers }).get({ headers }) => blends base headers with final ones', async () => {
-    const spy = vi.fn(async r => await r.json())
-
-    await fetcher({
-      base: 'https:foo.bar',
-      fetch: withSpies(spy),
-    }).post(OBJECT)
-    expect(spy).toHaveReturnedWith(OBJECT)
-  })
-
-  describe('BEHAVIOR', () => {
-    describe('errors', () => {
-      it('can catch an error, when thrown', async () => {
-        const uncaught = async () => await fetcher({ fetch: return404 }).get('/hey')
-        const caught = async () => await fetcher({ fetch: return404 }).get('/hey').catch(() => {})
-
-        const throws = async () => {
-          throw new Error('bad stuff')
-        }
-
-        const doesntThrow = async () => await 5
-
-        expect(throws).rejects.toThrow()
-        expect(uncaught).rejects.toThrow()
-        expect(caught).not.toThrow()
-        expect(doesntThrow).not.toThrow()
+const tests: TestTree = {
+  'NAMED EXPORTS': {
+    'import { fetcher } from "itty-fetcher"': {
+      'is a function': () => expect(typeof fetcher).toBe('function'),
+    },
+  },
+  'fetcher(options?)': {
+    'returns a fetcher instance': () => {
+      const instance = fetcher()
+      expect(typeof instance).toBe('function')
+      HTTP_METHODS.forEach(method => {
+        expect(typeof instance[method]).toBe('function')
       })
-    })
-  })
-})
+    },
+    'can be called with string base URL': () => {
+      const instance = fetcher('https://api.example.com')
+      expect(typeof instance).toBe('function')
+    },
+    'can be called with options object': () => {
+      const instance = fetcher({ base: 'https://api.example.com' })
+      expect(typeof instance).toBe('function')
+    },
+    'exposes chainable methods': HTTP_METHODS.reduce((acc, method) => {
+      acc[`.${method}()`] = ({ fetcherInstance }) => {
+        expect(typeof fetcherInstance[method]).toBe('function')
+      }
+      return acc
+    }, {} as Record<string, TestLeaf>),
+  },
+  'HTTP METHODS': {
+    'GET': {
+      'makes GET request': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        const response = await fetcher({ fetch: createMockFetch(spy) }).get('/')
+        expect(capturedMethod).toBe('GET')
+        expect(response).toEqual(MOCK_OBJECT)
+        resolve()
+      },
+      'handles no URL parameter': async ({ resolve }) => {
+        let capturedUrl = ''
+        const spy = mock((r: Request) => {
+          capturedUrl = r.url
+          return r.url
+        })
+        await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).get()
+        expect(capturedUrl).toBe('https://foo.bar/')
+        resolve()
+      },
+    },
+    'POST': {
+      'makes POST request': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        const response = await fetcher({ fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
+        expect(capturedMethod).toBe('POST')
+        expect(response).toEqual(MOCK_OBJECT)
+        resolve()
+      },
+      'serializes object payload': async ({ resolve }) => {
+        let capturedPayload = null
+        const spy = mock(async (r: Request) => {
+          capturedPayload = await r.json()
+          return capturedPayload
+        })
+        await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
+        expect(capturedPayload).toEqual(MOCK_OBJECT)
+        resolve()
+      },
+      'sets content-type header for JSON': async ({ resolve }) => {
+        let capturedContentType = ''
+        const spy = mock((r: Request) => {
+          capturedContentType = r.headers.get('content-type') || ''
+          return capturedContentType
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
+        expect(capturedContentType).toBe('application/json')
+        resolve()
+      },
+    },
+    'PUT': {
+      'makes PUT request': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).put('/', MOCK_OBJECT)
+        expect(capturedMethod).toBe('PUT')
+        resolve()
+      },
+    },
+    'PATCH': {
+      'makes PATCH request': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).patch('/', MOCK_OBJECT)
+        expect(capturedMethod).toBe('PATCH')
+        resolve()
+      },
+    },
+    'DELETE': {
+      'makes DELETE request': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).delete('/', MOCK_OBJECT)
+        expect(capturedMethod).toBe('DELETE')
+        resolve()
+      },
+    },
+  },
+  'OPTIONS': {
+    '{ base: string }': {
+      'prepends base URL to requests': async ({ resolve }) => {
+        let capturedUrl = ''
+        const spy = mock((r: Request) => {
+          capturedUrl = r.url
+          return r.url
+        })
+        await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).get('/cats')
+        expect(capturedUrl).toBe('https://foo.bar/cats')
+        resolve()
+      },
+      'handles base URL with trailing slash': async ({ resolve }) => {
+        let capturedUrl = ''
+        const spy = mock((r: Request) => {
+          capturedUrl = r.url
+          return r.url
+        })
+        await fetcher({ base: 'https://foo.bar/', fetch: createMockFetch(spy) }).get('/cats')
+        expect(capturedUrl).toBe('https://foo.bar/cats')
+        resolve()
+      },
+    },
+    '{ headers: object }': {
+      'adds headers to requests': async ({ resolve }) => {
+        let capturedHeader = ''
+        const spy = mock((r: Request) => {
+          capturedHeader = r.headers.get('foo') || ''
+          return capturedHeader
+        })
+        await fetcher({ 
+          base: 'https://foo.bar', 
+          fetch: createMockFetch(spy),
+          headers: { foo: 'bar' }
+        }).get('/cats')
+        expect(capturedHeader).toBe('bar')
+        resolve()
+      },
+      'merges base headers with request headers': async ({ resolve }) => {
+        let capturedHeaders: [string, string][] = []
+        const spy = mock((r: Request) => {
+          capturedHeaders = [...r.headers.entries()]
+          return capturedHeaders
+        })
+        await fetcher({
+          base: 'https://foo.bar',
+          fetch: createMockFetch(spy),
+          headers: { foo: 'bar', cat: 'dog' },
+        }).get('/cats', {
+          headers: { foo: 'baz' }
+        })
+        expect(capturedHeaders).toEqual([
+          ['cat', 'dog'],
+          ['foo', 'baz'],
+        ])
+        resolve()
+      },
+      'handles Headers object': async ({ resolve }) => {
+        let capturedHeaders: [string, string][] = []
+        const spy = mock((r: Request) => {
+          capturedHeaders = [...r.headers.entries()]
+          return capturedHeaders
+        })
+        const headers = new Headers()
+        headers.append('foo', 'bar')
+        
+        await fetcher({
+          base: 'https://foo.bar',
+          fetch: createMockFetch(spy),
+          headers,
+        }).get('/cats')
+        expect(capturedHeaders).toEqual([['foo', 'bar']])
+        resolve()
+      },
+    },
+    '{ query: object }': {
+      'appends query parameters': async ({ resolve }) => {
+        let capturedQuery: Record<string, string> = {}
+        const spy = mock((r: Request) => {
+          const url = new URL(r.url)
+          capturedQuery = Object.fromEntries(url.searchParams.entries())
+          return capturedQuery
+        })
+        
+        await fetcher({
+          base: 'https://foo.bar?foo=bar',
+          fetch: createMockFetch(spy),
+        }).get({ query: { page: 2 } })
+        expect(capturedQuery).toEqual({ foo: 'bar', page: '2' })
+        resolve()
+      },
+    },
+    '{ parse: false }': {
+      'returns raw Response object': async ({ resolve }) => {
+        const response = await fetcher({ 
+          fetch: createMockFetch(),
+          parse: false 
+        }).get('/')
+        expect(response).toBeInstanceOf(Response)
+        resolve()
+      },
+    },
+    '{ encode: false }': {
+      'does not encode payload': async ({ resolve }) => {
+        let capturedText = ''
+        const spy = mock(async (r: Request) => {
+          capturedText = await r.text()
+          return capturedText
+        })
+        const payload = 'raw string'
+        await fetcher({ 
+          fetch: createMockFetch(spy),
+          encode: false 
+        }).post('/', payload)
+        expect(capturedText).toBe(payload)
+        resolve()
+      },
+    },
+  },
+  'ERROR HANDLING': {
+    'throws on HTTP error status': {
+      '404 without body': async ({ resolve }) => {
+        try {
+          await fetcher({ fetch: create404Response }).get('/missing')
+          expect(false).toBe(true) // Should not reach here
+        } catch (error) {
+          expect(error.status).toBe(404)
+          resolve()
+        }
+      },
+      '404 with JSON error body': async ({ resolve }) => {
+        try {
+          await fetcher({ fetch: create404WithBodyResponse }).get('/missing')
+          expect(false).toBe(true) // Should not reach here
+        } catch (error) {
+          expect(error.status).toBe(404)
+          resolve()
+        }
+      },
+    },
+    'can catch and handle errors': async ({ resolve }) => {
+      const result = await fetcher({ fetch: create404Response })
+        .get('/missing')
+        .catch((error) => ({ error: error.status }))
+      
+      expect(result.error).toBe(404)
+      resolve()
+    },
+  },
+  'RESPONSE PARSING': {
+    'JSON responses': {
+      'parses JSON by default': async ({ resolve }) => {
+        const response = await fetcher({ fetch: createMockFetch() }).get('/')
+        expect(response).toEqual(MOCK_OBJECT)
+        resolve()
+      },
+    },
+    'text responses': {
+      'parses text when content-type is not JSON': async ({ resolve }) => {
+        const spy = mock(() => {})
+        const response = await fetcher({ 
+          fetch: createTextResponse(spy) 
+        }).get('/')
+        expect(response).toBe(MOCK_TEXT)
+        resolve()
+      },
+    },
+  },
+  'MISC BEHAVIOR': {
+    'handles different argument patterns': {
+      'method(url, payload, options)': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).post('/test', MOCK_OBJECT, {})
+        expect(capturedMethod).toBe('POST')
+        resolve()
+      },
+      'method(payload, options)': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).post(MOCK_OBJECT, {})
+        expect(capturedMethod).toBe('POST')
+        resolve()
+      },
+      'method(options)': async ({ resolve }) => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        await fetcher({ fetch: createMockFetch(spy) }).get({})
+        expect(capturedMethod).toBe('GET')
+        resolve()
+      },
+    },
+    'handles absolute URLs': async ({ resolve }) => {
+      let capturedUrl = ''
+      const spy = mock((r: Request) => {
+        capturedUrl = r.url
+        return r.url
+      })
+      await fetcher({ 
+        base: 'https://foo.bar',
+        fetch: createMockFetch(spy) 
+      }).get('https://other.com/api')
+      expect(capturedUrl).toBe('https://other.com/api')
+      resolve()
+    },
+  },
+}
+
+// setup function for each test
+const setup = () => {
+  const getFetcher = (options = {}) => fetcher(options)
+
+  return {
+    getFetcher,
+    fetcherInstance: getFetcher(),
+    spy: mock(() => {}),
+  }
+}
+
+// recursive test runner
+const runTests = (tests: TestTree) => {
+  for (const [name, test] of Object.entries(tests)) {
+    if (typeof test === 'function') {
+      if (test.constructor.name === 'AsyncFunction') {
+        // @ts-ignore
+        it(name, () => new Promise(resolve => test({ ...setup(), resolve })))
+      } else {
+        // @ts-ignore
+        it(name, () => test({ ...setup() }))
+      }
+    } else {
+      describe(name, () => runTests(test))
+    }
+  }
+}
+
+// run the tests!
+runTests(tests)
