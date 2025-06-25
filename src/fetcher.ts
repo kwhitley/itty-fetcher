@@ -9,20 +9,19 @@ const handleRequest = async (
   args: any[],
   options: FetcherOptionsObject,
   base: string,
-  headers: HeadersInit
+  headersInit: HeadersInit,
+  childBase = typeof args[0] == 'string' ? args.shift() : '',
+  payload = method != 'get' ? args.shift() : null,
+  headers = new Headers(headersInit),
 ) => {
-  let childBase = typeof args[0] == 'string' ? args.shift() : ''
-  let payload = method != 'get' ? args.shift() : null
-
   options = { ...options, ...args.shift(), method }
-  headers = new Headers(headers)
 
   // Golf: Ultra-minimal URL - attempt 5
-  let url = new URL((f => f && (~f.indexOf('http') || ~base.indexOf('http')) 
-    ? f 
+  let url = new URL((f => f && (~f.indexOf('http') || ~base.indexOf('http'))
+    ? f
     : 'http://localhost' + (f[0] == '/' ? f : '/' + f)
-  )(~childBase.indexOf('http') 
-    ? childBase 
+  )(~childBase.indexOf('http')
+    ? childBase
     : base + (base.slice(-1) == '/' && childBase[0] == '/' ? childBase.slice(1) : childBase)
   ))
 
@@ -30,12 +29,12 @@ const handleRequest = async (
   for (let [k, v] of Object.entries(options.query || {})) url.searchParams.append(k, v as string)
 
   // Golf: Compact payload handling with comma operator
-  payload && (
-    options.body = options.encode === false 
-      ? payload 
+  if (payload) {
+    options.body = options.encode === false
+      ? payload
       : (typeof payload == 'string' ? payload : JSON.stringify(payload)),
     options.encode !== false && typeof payload != 'string' && headers.set('content-type', 'application/json')
-  )
+  }
 
   // Golf: Inline header merging
   for (let [k, v] of [...new Headers(options.headers ?? [])]) headers.set(k, v)
@@ -46,15 +45,17 @@ const handleRequest = async (
   !response.ok && (error = Object.assign(new Error(response.statusText), { status: response.status }))
 
   // Golf: Compact parsing
-  options.parse !== false && (response = await (
-    response.headers.get('content-type')?.includes('json') 
-      ? response.json() 
+  if (options.parse !== false) {
+    response = await (
+    response.headers.get('content-type')?.includes('json')
+      ? response.json()
       : response.text()
-  ))
+    )
+  }
 
   // Golf: Early return for errors
-  if (error) return options.onError 
-    ? options.onError(error, response) 
+  if (error) return options.onError
+    ? options.onError(error, response)
     : Promise.reject(error)
 
   // Golf: Compact after handlers - only transform if handler returns non-undefined
@@ -70,8 +71,8 @@ const handleRequest = async (
 export const fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject,
-  options = typeof optionsOrBase == 'string' 
-    ? { base: optionsOrBase, ...additionalOptions } 
+  options = typeof optionsOrBase == 'string'
+    ? { base: optionsOrBase, ...additionalOptions }
     : optionsOrBase || {},
   {
     base = typeof window !== 'undefined' ? window?.location?.origin ?? '' : '',
@@ -82,7 +83,7 @@ export const fetcher = (
   // @ts-ignore
   new Proxy((...args: any) => fetcher(...args), {
     // @ts-ignore
-    get: (obj, method: any) => obj[method] ?? ((...args) => 
+    get: (obj, method: any) => obj[method] ?? ((...args) =>
       handleRequest(method, args, restOptions, base as string, headers)
     )
   })

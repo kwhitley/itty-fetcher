@@ -9,6 +9,7 @@ export default [{
   rules: {
     '@typescript-eslint/no-unused-expressions': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-expressions': 'off',
     'quotes': ['error', 'single'],
     'semi': ['error', 'never'],
   },
