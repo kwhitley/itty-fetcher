@@ -380,6 +380,60 @@ const tests: TestTree = {
       resolve()
     },
   },
+  'AFTER HANDLERS': {
+    'transforms response when handler returns value': async ({ resolve }) => {
+      const response = await fetcher({
+        fetch: createMockFetch(),
+        after: [
+          async (data) => ({ ...data, transformed: true })
+        ]
+      }).get('/')
+      expect(response.transformed).toBe(true)
+      resolve()
+    },
+    'does not transform when handler returns undefined': async ({ resolve }) => {
+      let sideEffectTriggered = false
+      const response = await fetcher({
+        fetch: createMockFetch(),
+        after: [
+          async (data) => {
+            sideEffectTriggered = true
+            // Explicitly return undefined (like console.log)
+            return undefined
+          }
+        ]
+      }).get('/')
+      expect(sideEffectTriggered).toBe(true)
+      expect(response).toEqual(MOCK_OBJECT) // Original response unchanged
+      resolve()
+    },
+    'chains handlers correctly with mixed undefined returns': async ({ resolve }) => {
+      let handler1Called = false
+      let handler2Called = false
+      const response = await fetcher({
+        fetch: createMockFetch(),
+        after: [
+          async (data) => {
+            handler1Called = true
+            return { ...data, step1: true }
+          },
+          async (data) => {
+            handler2Called = true
+            // Return undefined - should not transform
+          },
+          async (data) => {
+            return { ...data, step3: true }
+          }
+        ]
+      }).get('/')
+      expect(handler1Called).toBe(true)
+      expect(handler2Called).toBe(true)
+      expect(response.step1).toBe(true)
+      expect(response.step3).toBe(true)
+      expect(response.foo).toBe('bar') // Original data preserved
+      resolve()
+    },
+  },
 }
 
 // setup function for each test

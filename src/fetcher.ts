@@ -52,8 +52,11 @@ const handleRequest = async (
   // Golf: Early return for errors
   if (error) return options.onError ? options.onError(error, response) : Promise.reject(error)
 
-  // Golf: Compact after handlers
-  for (let handler of options.after || []) response = await handler(response, new Request(url, { ...options, headers })) ?? response
+  // Golf: Compact after handlers - only transform if handler returns non-undefined
+  for (let handler of options.after || []) {
+    let result = await handler(response, new Request(url, { ...options, headers }))
+    result !== undefined && (response = result)
+  }
 
   return response
 }
