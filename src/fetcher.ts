@@ -17,17 +17,8 @@ const handleRequest = async (
   options = { ...options, ...args.shift(), method }
   headers = new Headers(headers)
 
-  // Golf: Streamlined URL logic
-  let fullUrl = childBase.indexOf('http') === -1 ?
-    base + (base.endsWith('/') && childBase.startsWith('/') ? childBase.slice(1) : childBase) :
-    childBase
-
-  // Golf: Simplified fallback
-  if (!fullUrl || (!fullUrl.startsWith('http') && !base.startsWith('http'))) {
-    fullUrl = 'http://localhost' + (fullUrl.startsWith('/') ? fullUrl : '/' + fullUrl)
-  }
-
-  let url = new URL(fullUrl)
+  // Golf: Ultra-minimal URL - attempt 5
+  let url = new URL((f=>f&&(~f.indexOf('http')||~base.indexOf('http'))?f:'http://localhost'+(f[0]=='/'?f:'/'+f))(~childBase.indexOf('http')?childBase:base+(base.slice(-1)=='/'&&childBase[0]=='/'?childBase.slice(1):childBase)))
 
   // Golf: For loop instead of forEach
   for (let [k, v] of Object.entries(options.query || {})) url.searchParams.append(k, v as string)
