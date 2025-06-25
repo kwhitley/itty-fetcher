@@ -47,9 +47,9 @@ const handleRequest = async (
   // Golf: Compact parsing
   if (options.parse !== false) {
     response = await (
-    response.headers.get('content-type')?.includes('json')
-      ? response.json()
-      : response.text()
+      response.headers.get('content-type')?.includes('json')
+        ? response.json()
+        : response.text()
     )
   }
 
