@@ -19,8 +19,8 @@ const handleRequest = async (
   options = { ...options, ...args.shift(), method }
   headers = new Headers(headers)
   // Handle URL joining with proper slash handling
-  let fullUrl = childBase.indexOf('http') === -1 ? 
-    (base.endsWith('/') && childBase.startsWith('/') ? base + childBase.slice(1) : base + childBase) : 
+  let fullUrl = childBase.indexOf('http') === -1 ?
+    (base.endsWith('/') && childBase.startsWith('/') ? base + childBase.slice(1) : base + childBase) :
     childBase
 
   // Handle case where we end up with an empty or relative URL
@@ -39,7 +39,7 @@ const handleRequest = async (
     } else {
       options.body = typeof payload == 'string' ? payload : JSON.stringify(payload)
       // @ts-ignore - set content-type
-      typeof payload != 'string' && headers.set('content-type', 'application/json')
+      if (typeof payload != 'string') headers.set('content-type', 'application/json')
     }
   }
 
@@ -57,9 +57,11 @@ const handleRequest = async (
     error = Object.assign(new Error(response.statusText), { status: response.status })
   }
 
-  options.parse !== false && (response = await (response.headers.get('content-type')?.includes('json')
-    ? response.json()
-    : response.text()))
+  if (options.parse !== false) {
+    response = await (response.headers.get('content-type')?.includes('json')
+      ? response.json()
+      : response.text())
+  }
 
   if (error) return options.onError ? options.onError(error, response) : Promise.reject(error)
 

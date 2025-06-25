@@ -19,7 +19,7 @@
     "outDir": "",
     "target": "esnext",
     "module": "esnext",
-    "types": ["@types/node"]
+    "types": ["@types/node", "bun"]
   },
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/types.ts", "examples"],
   "include": ["src"]

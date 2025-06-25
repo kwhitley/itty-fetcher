@@ -195,8 +195,8 @@ const tests: TestTree = {
           capturedHeader = r.headers.get('foo') || ''
           return capturedHeader
         })
-        await fetcher({ 
-          base: 'https://foo.bar', 
+        await fetcher({
+          base: 'https://foo.bar',
           fetch: createMockFetch(spy),
           headers: { foo: 'bar' }
         }).get('/cats')
@@ -230,7 +230,7 @@ const tests: TestTree = {
         })
         const headers = new Headers()
         headers.append('foo', 'bar')
-        
+
         await fetcher({
           base: 'https://foo.bar',
           fetch: createMockFetch(spy),
@@ -248,7 +248,7 @@ const tests: TestTree = {
           capturedQuery = Object.fromEntries(url.searchParams.entries())
           return capturedQuery
         })
-        
+
         await fetcher({
           base: 'https://foo.bar?foo=bar',
           fetch: createMockFetch(spy),
@@ -259,9 +259,9 @@ const tests: TestTree = {
     },
     '{ parse: false }': {
       'returns raw Response object': async ({ resolve }) => {
-        const response = await fetcher({ 
+        const response = await fetcher({
           fetch: createMockFetch(),
-          parse: false 
+          parse: false
         }).get('/')
         expect(response).toBeInstanceOf(Response)
         resolve()
@@ -275,9 +275,9 @@ const tests: TestTree = {
           return capturedText
         })
         const payload = 'raw string'
-        await fetcher({ 
+        await fetcher({
           fetch: createMockFetch(spy),
-          encode: false 
+          encode: false
         }).post('/', payload)
         expect(capturedText).toBe(payload)
         resolve()
@@ -309,7 +309,7 @@ const tests: TestTree = {
       const result = await fetcher({ fetch: create404Response })
         .get('/missing')
         .catch((error) => ({ error: error.status }))
-      
+
       expect(result.error).toBe(404)
       resolve()
     },
@@ -325,8 +325,8 @@ const tests: TestTree = {
     'text responses': {
       'parses text when content-type is not JSON': async ({ resolve }) => {
         const spy = mock(() => {})
-        const response = await fetcher({ 
-          fetch: createTextResponse(spy) 
+        const response = await fetcher({
+          fetch: createTextResponse(spy)
         }).get('/')
         expect(response).toBe(MOCK_TEXT)
         resolve()
@@ -372,9 +372,9 @@ const tests: TestTree = {
         capturedUrl = r.url
         return r.url
       })
-      await fetcher({ 
+      await fetcher({
         base: 'https://foo.bar',
-        fetch: createMockFetch(spy) 
+        fetch: createMockFetch(spy)
       }).get('https://other.com/api')
       expect(capturedUrl).toBe('https://other.com/api')
       resolve()
