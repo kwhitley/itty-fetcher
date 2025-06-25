@@ -16,17 +16,17 @@ const handleRequest = async (
 
   options = { ...options, ...args.shift(), method }
   headers = new Headers(headers)
-  
+
   // Golf: Streamlined URL logic
-  let fullUrl = childBase.indexOf('http') === -1 ? 
-    base + (base.endsWith('/') && childBase.startsWith('/') ? childBase.slice(1) : childBase) : 
+  let fullUrl = childBase.indexOf('http') === -1 ?
+    base + (base.endsWith('/') && childBase.startsWith('/') ? childBase.slice(1) : childBase) :
     childBase
-  
+
   // Golf: Simplified fallback
   if (!fullUrl || (!fullUrl.startsWith('http') && !base.startsWith('http'))) {
     fullUrl = 'http://localhost' + (fullUrl.startsWith('/') ? fullUrl : '/' + fullUrl)
   }
-  
+
   let url = new URL(fullUrl)
 
   // Golf: For loop instead of forEach
@@ -40,7 +40,7 @@ const handleRequest = async (
 
   // Golf: Inline header merging
   for (let [k, v] of [...new Headers(options.headers ?? [])]) headers.set(k, v)
-  
+
   let error, response = await (options.fetch ?? fetch)(new Request(url, { ...options, headers }))
 
   // Golf: Compact error handling
@@ -54,7 +54,7 @@ const handleRequest = async (
 
   // Golf: Compact after handlers - only transform if handler returns non-undefined
   for (let handler of options.after || []) {
-    let result = await handler(response, new Request(url, { ...options, headers }))
+    let result = await handler(response)
     result !== undefined && (response = result)
   }
 
