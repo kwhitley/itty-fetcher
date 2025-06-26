@@ -16,10 +16,10 @@ const handleRequest = async (
   options = { ...globalOptions, ...args.shift(), method },
 ) => {
 
-  // Attempt 3: Simplified URL construction using URL constructor
+  // Simplified URL construction - no localhost fallback
   let url = new URL(
     childBase,
-    childBase.includes('://') ? undefined : base || (typeof window !== 'undefined' ? window.location?.href : 'http://localhost')
+    childBase.includes('://') ? undefined : base || (typeof location !== 'undefined' ? location?.href : undefined)
   )
 
   // Golf: For loop instead of forEach

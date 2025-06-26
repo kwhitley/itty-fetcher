@@ -2,6 +2,19 @@ import { describe, afterAll, expect, it, mock } from 'bun:test'
 import { fetcher } from './fetcher'
 import type { Fetcher } from './types'
 
+// Mock global location for browser-like behavior in tests
+globalThis.location = {
+  href: 'https://test.example.com/path',
+  origin: 'https://test.example.com',
+  pathname: '/path',
+  search: '',
+  hash: '',
+  host: 'test.example.com',
+  hostname: 'test.example.com',
+  port: '',
+  protocol: 'https:'
+} as Location
+
 type TestLeaf = (args: {
   fetcherInstance: Fetcher,
   resolve: () => void,
