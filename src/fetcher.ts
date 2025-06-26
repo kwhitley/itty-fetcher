@@ -4,7 +4,7 @@ import type {
   Fetcher,
 } from './types'
 
-const handleRequest = async (
+let handleRequest = async (
   method: string,
   args: any[],
   globalOptions: FetcherOptionsObject,
@@ -16,10 +16,10 @@ const handleRequest = async (
   options = { ...globalOptions, ...args.shift(), method },
 ) => {
 
-  // Simplified URL construction - no localhost fallback
+  // Simplified URL letruction - no localhost fallback
   let url = new URL(
     childBase,
-    childBase.includes('://') ? undefined : base || (typeof location !== 'undefined' ? location?.href : undefined)
+    childBase.includes('://') ? childBase : base || globalThis.location?.href
   )
 
   // Golf: For loop instead of forEach
@@ -27,7 +27,7 @@ const handleRequest = async (
 
   // Golf: Compact payload handling with comma operator
   if (payload) {
-    options.body = options.encode === false
+    options.body = options.encode == false
       ? payload
       : (typeof payload == 'string' ? payload : JSON.stringify(payload)),
     options.encode !== false && typeof payload != 'string' && headers.set('content-type', 'application/json')
@@ -65,31 +65,28 @@ const handleRequest = async (
 }
 
 // Attempt 2: Single curried function
-export const fetcher = (
+export let fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject
 ): Fetcher => {
-  const options = typeof optionsOrBase == 'string'
+  let options = typeof optionsOrBase == 'string'
     ? { base: optionsOrBase, ...additionalOptions }
     : optionsOrBase || {}
 
-  const {
+  let {
     base = typeof window !== 'undefined' ? window?.location?.origin ?? '' : '',
     headers = {},
     ...restOptions
   } = options
 
-  const request = (method: string, ...args: any[]) =>
+  let request = (method: string, ...args: any[]) =>
     handleRequest(method, args, restOptions, base as string, headers)
 
-  // Return function with methods attached
-  const fn = (...args: any[]) => request('get', ...args)
-  fn.get = (...args: any[]) => request('get', ...args)
-  fn.post = (...args: any[]) => request('post', ...args)
-  fn.put = (...args: any[]) => request('put', ...args)
-  fn.patch = (...args: any[]) => request('patch', ...args)
-  fn.delete = (...args: any[]) => request('delete', ...args)
+  let fn = (...args: any[]) => request('get', ...args)
 
-  // @ts-ignore
-  return fn
+  for (let method of ['get', 'post', 'put', 'patch', 'delete']) {
+    (fn as any)[method] = (...args: any[]) => request(method, ...args)
+  }
+
+  return fn as any
 }
