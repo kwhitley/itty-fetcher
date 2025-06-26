@@ -7,23 +7,20 @@ import type {
 const handleRequest = async (
   method: string,
   args: any[],
-  options: FetcherOptionsObject,
+  globalOptions: FetcherOptionsObject,
   base: string,
   headersInit: HeadersInit,
   childBase = typeof args[0] == 'string' ? args.shift() : '',
   payload = method != 'get' ? args.shift() : null,
   headers = new Headers(headersInit),
+  options = { ...globalOptions, ...args.shift(), method },
 ) => {
-  options = { ...options, ...args.shift(), method }
 
-  // Golf: Ultra-minimal URL - attempt 5
-  let url = new URL((f => f && (~f.indexOf('http') || ~base.indexOf('http'))
-    ? f
-    : 'http://localhost' + (f[0] == '/' ? f : '/' + f)
-  )(~childBase.indexOf('http')
-    ? childBase
-    : base + (base.slice(-1) == '/' && childBase[0] == '/' ? childBase.slice(1) : childBase)
-  ))
+  // Attempt 3: Simplified URL construction using URL constructor
+  let url = new URL(
+    childBase,
+    childBase.includes('://') ? undefined : base || (typeof window !== 'undefined' ? window.location?.href : 'http://localhost')
+  )
 
   // Golf: For loop instead of forEach
   for (let [k, v] of Object.entries(options.query || {})) url.searchParams.append(k, v as string)
@@ -67,23 +64,32 @@ const handleRequest = async (
   return response
 }
 
-// Golf: Inline function with default parameters
+// Attempt 2: Single curried function
 export const fetcher = (
   optionsOrBase?: FetcherOptions,
-  additionalOptions?: FetcherOptionsObject,
-  options = typeof optionsOrBase == 'string'
+  additionalOptions?: FetcherOptionsObject
+): Fetcher => {
+  const options = typeof optionsOrBase == 'string'
     ? { base: optionsOrBase, ...additionalOptions }
-    : optionsOrBase || {},
-  {
+    : optionsOrBase || {}
+
+  const {
     base = typeof window !== 'undefined' ? window?.location?.origin ?? '' : '',
     headers = {},
     ...restOptions
   } = options
-): Fetcher =>
+
+  const request = (method: string, ...args: any[]) =>
+    handleRequest(method, args, restOptions, base as string, headers)
+
+  // Return function with methods attached
+  const fn = (...args: any[]) => request('get', ...args)
+  fn.get = (...args: any[]) => request('get', ...args)
+  fn.post = (...args: any[]) => request('post', ...args)
+  fn.put = (...args: any[]) => request('put', ...args)
+  fn.patch = (...args: any[]) => request('patch', ...args)
+  fn.delete = (...args: any[]) => request('delete', ...args)
+
   // @ts-ignore
-  new Proxy((...args: any) => fetcher(...args), {
-    // @ts-ignore
-    get: (obj, method: any) => obj[method] ?? ((...args) =>
-      handleRequest(method, args, restOptions, base as string, headers)
-    )
-  })
+  return fn
+}

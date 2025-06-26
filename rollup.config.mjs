@@ -10,7 +10,7 @@ const files = (await globby('./src/*.ts', {
   ignore: ['**/*.spec.ts', '**/*.test.ts', '**/types.ts', '**/*.ignore.*.ts'],
 })).map(path => ({
   path,
-  shortPath: path.replace(/(\/src)|(\.ts)/g, '').replace('./index', '.'),
+  shortPath: path.replace(/(\/src)|(\.ts)/g, '').replace('./index', '.').replace('./fetcher', '.'),
   esm: path.replace('/src/', '/dist/').replace('.ts', '.mjs'),
   cjs: path.replace('/src/', '/dist/').replace('.ts', '.js'),
   types: path.replace('/src/', '/dist/').replace('.ts', '.d.ts'),
