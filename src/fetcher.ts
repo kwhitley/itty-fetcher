@@ -74,7 +74,7 @@ export let fetcher = (
     : optionsOrBase || {}
 
   let {
-    base = typeof window !== 'undefined' ? window?.location?.origin ?? '' : '',
+    base = globalThis?.location?.origin || '',
     headers = {},
     ...restOptions
   } = options
