@@ -38,22 +38,22 @@ const createMockFetch = (...spies: ((request: Request) => any)[]) => {
     return Promise.resolve(new Response(STRINGIFIED_OBJECT, {
       headers: { 'content-type': 'application/json' }
     }))
-  })
+  }) as any
 }
 
 const create404Response = () =>
-  Promise.resolve(new Response(null, { status: 404 }))
+  Promise.resolve(new Response(null, { status: 404 })) as any
 
 const create404WithBodyResponse = () =>
   Promise.resolve(new Response(JSON.stringify({ status: 404, error: 'Not found' }), {
     headers: { 'content-type': 'application/json' },
     status: 404,
-  }))
+  })) as any
 
-const createTextResponse = (spy: (request: Request) => any) => (request: Request) => {
+const createTextResponse = (spy: (request: Request) => any) => ((request: Request) => {
   spy(request)
   return Promise.resolve(new Response(MOCK_TEXT))
-}
+}) as any
 
 const tests: TestTree = {
   'NAMED EXPORTS': {
@@ -127,6 +127,7 @@ const tests: TestTree = {
           return capturedPayload
         })
         await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
+        // @ts-ignore
         expect(capturedPayload).toEqual(MOCK_OBJECT)
         resolve()
       },
@@ -219,7 +220,7 @@ const tests: TestTree = {
       'merges base headers with request headers': async ({ resolve }) => {
         let capturedHeaders: [string, string][] = []
         const spy = mock((r: Request) => {
-          capturedHeaders = [...r.headers.entries()]
+          capturedHeaders = [...(r.headers as any).entries()]
           return capturedHeaders
         })
         await fetcher({
@@ -238,7 +239,7 @@ const tests: TestTree = {
       'handles Headers object': async ({ resolve }) => {
         let capturedHeaders: [string, string][] = []
         const spy = mock((r: Request) => {
-          capturedHeaders = [...r.headers.entries()]
+          capturedHeaders = [...(r.headers as any).entries()]
           return capturedHeaders
         })
         const headers = new Headers()
@@ -301,6 +302,7 @@ const tests: TestTree = {
     'throws on HTTP error status': {
       '404 without body': async ({ resolve }) => {
         try {
+          // @ts-ignore
           await fetcher({ fetch: create404Response }).get('/missing')
           expect(false).toBe(true) // Should not reach here
         } catch (error) {
@@ -310,6 +312,7 @@ const tests: TestTree = {
       },
       '404 with JSON error body': async ({ resolve }) => {
         try {
+          // @ts-ignore
           await fetcher({ fetch: create404WithBodyResponse }).get('/missing')
           expect(false).toBe(true) // Should not reach here
         } catch (error) {
@@ -319,6 +322,7 @@ const tests: TestTree = {
       },
     },
     'can catch and handle errors': async ({ resolve }) => {
+      // @ts-ignore
       const result = await fetcher({ fetch: create404Response })
         .get('/missing')
         .catch((error) => ({ error: error.status }))
@@ -398,6 +402,7 @@ const tests: TestTree = {
       const response = await fetcher({
         fetch: createMockFetch(),
         after: [
+          // @ts-ignore
           async (data) => ({ ...data, transformed: true })
         ]
       }).get('/')
@@ -426,6 +431,7 @@ const tests: TestTree = {
       const response = await fetcher({
         fetch: createMockFetch(),
         after: [
+          // @ts-ignore
           async (data) => {
             handler1Called = true
             return { ...data, step1: true }
@@ -434,6 +440,7 @@ const tests: TestTree = {
             handler2Called = true
             // Return undefined - should not transform
           },
+          // @ts-ignore
           async (data) => {
             return { ...data, step3: true }
           }

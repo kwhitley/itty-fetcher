@@ -4,7 +4,7 @@ import type {
   Fetcher,
 } from './types'
 
-let handleRequest = async (
+const handleRequest = async (
   method: string,
   args: any[],
   globalOptions: FetcherOptionsObject,
@@ -12,50 +12,42 @@ let handleRequest = async (
   headersInit: HeadersInit,
   childBase = typeof args[0] == 'string' ? args.shift() : '',
   payload = method != 'get' ? args.shift() : null,
-  headers = new Headers(headersInit),
-  options = { ...globalOptions, ...args.shift(), method },
 ) => {
-
-  // Simplified URL letruction - no localhost fallback
+  // Use undefined instead of childBase when absolute
   let url = new URL(
     childBase,
-    childBase.includes('://') ? childBase : base || globalThis.location?.href
+    childBase.includes('://') ? undefined : base || globalThis.location?.href
   )
+  let options = { ...globalOptions, ...args.shift(), method }
+  let headers = new Headers(headersInit)
 
-  // Golf: For loop instead of forEach
-  for (let [k, v] of Object.entries(options.query || {})) url.searchParams.append(k, v as string)
+  // Use for...in for better minification
+  for (let k in options.query || {}) url.searchParams.append(k, options.query[k])
 
-  // Golf: Compact payload handling with comma operator
+  // Streamlined payload handling
   if (payload) {
-    options.body = options.encode == false
-      ? payload
-      : (typeof payload == 'string' ? payload : JSON.stringify(payload)),
-    options.encode !== false && typeof payload != 'string' && headers.set('content-type', 'application/json')
+    let isString = typeof payload == 'string'
+    options.body = options.encode == false ? payload : (isString ? payload : JSON.stringify(payload))
+    !isString && options.encode !== false && headers.set('content-type', 'application/json')
   }
 
-  // Golf: Inline header merging
-  for (let [k, v] of [...new Headers(options.headers ?? [])]) headers.set(k, v)
+  // Shorter header merging
+  for (let [k, v] of new Headers(options.headers || [])) headers.set(k, v)
 
-  let error, response = await (options.fetch ?? fetch)(new Request(url, { ...options, headers }))
+  let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
+      error = !response.ok && Object.assign(new Error(response.statusText), { status: response.status })
 
-  // Golf: Compact error handling
-  !response.ok && (error = Object.assign(new Error(response.statusText), { status: response.status }))
+  // Parse response
+  options.parse !== false && (response = await (
+    response.headers.get('content-type')?.includes('json')
+      ? response.json()
+      : response.text()
+  ))
 
-  // Golf: Compact parsing
-  if (options.parse !== false) {
-    response = await (
-      response.headers.get('content-type')?.includes('json')
-        ? response.json()
-        : response.text()
-    )
-  }
+  // Handle error
+  if (error) return options.onError?.(error, response) || Promise.reject(error)
 
-  // Golf: Early return for errors
-  if (error) return options.onError
-    ? options.onError(error, response)
-    : Promise.reject(error)
-
-  // Golf: Compact after handlers - only transform if handler returns non-undefined
+  // Process after handlers
   for (let handler of options.after || []) {
     let result = await handler(response)
     result !== undefined && (response = result)
@@ -64,8 +56,7 @@ let handleRequest = async (
   return response
 }
 
-// Attempt 2: Single curried function
-export let fetcher = (
+export const fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject
 ): Fetcher => {
@@ -74,18 +65,20 @@ export let fetcher = (
     : optionsOrBase || {}
 
   let {
-    base = globalThis?.location?.origin || '',
+    base = globalThis.location?.origin || '',
     headers = {},
     ...restOptions
   } = options
 
   let request = (method: string, ...args: any[]) =>
-    handleRequest(method, args, restOptions, base as string, headers)
+    // @ts-ignore
+    handleRequest(method, args, restOptions, base, headers)
 
   let fn = (...args: any[]) => request('get', ...args)
 
   for (let method of ['get', 'post', 'put', 'patch', 'delete']) {
-    (fn as any)[method] = (...args: any[]) => request(method, ...args)
+    // @ts-ignore
+    fn[method] = (...args: any[]) => request(method, ...args)
   }
 
   return fn as any
