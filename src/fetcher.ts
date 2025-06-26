@@ -45,10 +45,11 @@ const handleRequest = async (
   ))
 
   // Process after handlers
-  for (let handler of options.after || []) {
-    let result = await handler(response)
-    result !== undefined && (response = result)
-  }
+  if (!error)
+    for (let handler of options.after || []) {
+      let result = await handler(response)
+      result !== undefined && (response = result)
+    }
 
   // Handle error
   if (options.tuple) return [response, error]

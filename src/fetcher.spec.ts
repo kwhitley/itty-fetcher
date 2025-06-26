@@ -502,7 +502,7 @@ const tests: TestTree = {
         expect(error).toBe(false)
         resolve()
       },
-      'transforms response even with errors': async ({ resolve }) => {
+      'does not transform response with errors': async ({ resolve }) => {
         // @ts-ignore
         const [response, error] = await fetcher({
           fetch: create404WithBodyResponse,
@@ -513,7 +513,7 @@ const tests: TestTree = {
           ]
         }).get('/missing')
 
-        expect(response.processed).toBe(true)
+        expect(response.processed).toBeUndefined()
         expect(response.status).toBe(404)
         expect(error).toBeTruthy()
         expect(error.status).toBe(404)
