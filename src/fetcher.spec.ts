@@ -42,18 +42,18 @@ const createMockFetch = (...spies: ((request: Request) => any)[]) => {
 }
 
 const create404Response = () =>
-  Promise.resolve(new Response(null, { status: 404 })) as any
+  Promise.resolve(new Response(null, { status: 404 }))
 
 const create404WithBodyResponse = () =>
   Promise.resolve(new Response(JSON.stringify({ status: 404, error: 'Not found' }), {
     headers: { 'content-type': 'application/json' },
     status: 404,
-  })) as any
+  }))
 
 const createTextResponse = (spy: (request: Request) => any) => ((request: Request) => {
   spy(request)
   return Promise.resolve(new Response(MOCK_TEXT))
-}) as any
+})
 
 const tests: TestTree = {
   'NAMED EXPORTS': {
@@ -342,9 +342,8 @@ const tests: TestTree = {
     'text responses': {
       'parses text when content-type is not JSON': async ({ resolve }) => {
         const spy = mock(() => {})
-        const response = await fetcher({
-          fetch: createTextResponse(spy)
-        }).get('/')
+        // @ts-ignore
+        const response = await fetcher({ fetch: createTextResponse(spy) }).get('/')
         expect(response).toBe(MOCK_TEXT)
         resolve()
       },

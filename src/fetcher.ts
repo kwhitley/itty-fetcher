@@ -35,7 +35,7 @@ const handleRequest = async (
   for (let [k, v] of new Headers(options.headers || [])) headers.set(k, v)
 
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
-      error = !response.ok && Object.assign(new Error(response.statusText), { status: response.status })
+      error = !response.ok && Object.assign(new Error(response.statusText), { status: response.status, response })
 
   // Parse response
   options.parse !== false && (response = await (
@@ -44,14 +44,15 @@ const handleRequest = async (
       : response.text()
   ))
 
-  // Handle error
-  if (error) return options.onError?.(error, response) || Promise.reject(error)
-
   // Process after handlers
   for (let handler of options.after || []) {
     let result = await handler(response)
     result !== undefined && (response = result)
   }
+
+  // Handle error
+  if (options.tuple) return [response, error]
+  if (error) return Promise.reject(error)
 
   return response
 }

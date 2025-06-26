@@ -6,6 +6,7 @@ export type FetcherOptionsObject = {
   fetch?: typeof fetch
   parse?: boolean
   encode?: boolean
+  tuple?: boolean
   after?: ResponseHandler[]
 } & RequestInit & Record<string, any>
 
