@@ -37,6 +37,8 @@ const handleRequest = async (
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
       error = !response.ok && Object.assign(new Error(response.statusText), { status: response.status, response })
 
+
+
   // Parse response
   options.parse !== false && (response = await (
     response.headers.get('content-type')?.includes('json')
@@ -45,17 +47,26 @@ const handleRequest = async (
   ))
 
   // Process after handlers
-  if (!error)
-    for (let handler of options.after || []) {
-      let result = await handler(response)
-      result !== undefined && (response = result)
-    }
+  for (let handler of options.after || []) {
+    let result = await handler(response)
+    result !== undefined && (response = result)
+  }
 
-  // Handle error
   if (options.tuple) return [response, error]
-  if (error) return Promise.reject(error)
+
+  if (error) throw error
 
   return response
+
+  // if (error) {
+  //   if (options.tuple) return [response, error]
+  //   throw error
+  // }
+
+  // // Handle error
+  // // if (options.tuple) return [response, error]
+
+  // return options.tuple ? [response, error] : response
 }
 
 export const fetcher = (
