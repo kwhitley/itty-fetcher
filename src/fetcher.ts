@@ -57,16 +57,6 @@ const handleRequest = async (
   if (error) throw error
 
   return response
-
-  // if (error) {
-  //   if (options.tuple) return [response, error]
-  //   throw error
-  // }
-
-  // // Handle error
-  // // if (options.tuple) return [response, error]
-
-  // return options.tuple ? [response, error] : response
 }
 
 export const fetcher = (
