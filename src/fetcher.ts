@@ -11,7 +11,7 @@ const handleRequest = async (
   base: string,
   headersInit: HeadersInit,
   childBase = typeof args[0] == 'string' ? args.shift() : '',
-  payload = method != 'get' ? args.shift() : null,
+  payload = method != 'GET' ? args.shift() : null,
 ) => {
   let url = new URL(
     childBase,
@@ -38,7 +38,7 @@ const handleRequest = async (
     try {
       let parseMethod = options.as
       parseMethod === 'json' && !response.headers.get('content-type')?.includes('json') && (parseMethod = 'text')
-      
+
       let parsedResponse = await response[parseMethod]()
 
       if (error) {
@@ -88,7 +88,7 @@ export const fetcher = (
 
   for (let method of ['get', 'post', 'put', 'patch', 'delete']) {
     // @ts-ignore
-    fn[method] = (...args: any[]) => request(method, ...args)
+    fn[method] = (...args: any[]) => request(method.toUpperCase(), ...args)
   }
 
   return fn as any
