@@ -533,11 +533,11 @@ const tests: TestTree = {
         resolve()
       },
     },
-    'text responses': {
+    'text responses can be parsed via { parse: "text" }': {
       'parses text when content-type is not JSON': async ({ resolve }) => {
         const spy = mock(() => {})
         // @ts-ignore
-        const response = await fetcher({ fetch: createTextResponse(spy) }).get('/')
+        const response = await fetcher({ fetch: createTextResponse(spy), parse: 'text' }).get('/')
         expect(response).toBe(MOCK_TEXT)
         resolve()
       },

@@ -19,7 +19,8 @@ const handleRequest = async (
   )
   let options = { ...globalOptions, ...args.shift(), method }
   let headers = new Headers(headersInit)
-  options.as = options.as ?? 'json'
+  let parse = options.parse ?? 'json'
+  let isJSON = parse === 'json'
 
   for (let k in options.query || {}) url.searchParams.append(k, options.query[k])
 
@@ -34,23 +35,20 @@ const handleRequest = async (
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
       error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined
 
-  if (options.parse !== false) {
+  if (parse) {
+    let parsedResponse
     try {
-      let parseMethod = options.as
-      parseMethod === 'json' && !response.headers.get('content-type')?.includes('json') && (parseMethod = 'text')
-
-      let parsedResponse = await response[parseMethod]()
+      parsedResponse = response = await response[parse]()
 
       if (error) {
-        parseMethod === 'json' ? (
+        isJSON ? (
           error = { ...error, ...parsedResponse },
           error!.message = parsedResponse.message ?? error!.message
         ) : (error!.message = parsedResponse ?? error!.message)
-      } else {
-        response = parsedResponse
       }
     } catch (parseError: any) {
-      !error && (error = Object.assign(new Error(parseError?.message || 'Parse error'), { status: response.status, response }))
+      !error && (error = Object.assign(new Error(parseError.message), { status: response.status, response }))
+      // parsedResponse = response = await response.text()
     }
   }
 
