@@ -620,7 +620,7 @@ const tests: TestTree = {
   },
   'MISC BEHAVIOR': {
     'handles different argument patterns': {
-      'method(url, payload, options)': async ({ resolve }) => {
+      '.post(url, payload, options)': async ({ resolve }) => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -630,7 +630,7 @@ const tests: TestTree = {
         expect(capturedMethod).toBe('POST')
         resolve()
       },
-      'method(payload, options)': async ({ resolve }) => {
+      '.post(payload, options)': async ({ resolve }) => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -640,7 +640,7 @@ const tests: TestTree = {
         expect(capturedMethod).toBe('POST')
         resolve()
       },
-      'method(options)': async ({ resolve }) => {
+      '.get(options)': async ({ resolve }) => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method

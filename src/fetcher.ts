@@ -22,14 +22,18 @@ const handleRequest = async (
   parse = options.parse ?? 'json',
   isString = typeof payload == 'string'
 
-  for (let k in options.query || {}) url.searchParams.append(k, options.query[k])
+  for (let k in options.query || {}) {
+    url.searchParams.append(k, options.query[k])
+  }
 
   if (payload) {
     options.body = options.encode == false ? payload : (isString ? payload : JSON.stringify(payload))
     !isString && options.encode != false && headers.set('content-type', 'application/json')
   }
 
-  for (let [k, v] of new Headers(options.headers || [])) headers.set(k, v)
+  for (let [k, v] of new Headers(options.headers || [])) {
+    headers.set(k, v)
+  }
 
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
       error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined
