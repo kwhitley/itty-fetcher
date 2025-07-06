@@ -19,12 +19,12 @@ const handleRequest = async (
   ),
   options = { ...globalOptions, ...args.shift(), method },
   headers = new Headers(headersInit),
-  parse = options.parse ?? 'json'
+  parse = options.parse ?? 'json',
+  isString = typeof payload == 'string'
 
   for (let k in options.query || {}) url.searchParams.append(k, options.query[k])
 
   if (payload) {
-    let isString = typeof payload == 'string'
     options.body = options.encode == false ? payload : (isString ? payload : JSON.stringify(payload))
     !isString && options.encode != false && headers.set('content-type', 'application/json')
   }
@@ -34,8 +34,8 @@ const handleRequest = async (
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
       error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined
 
+  // parse response (if parse is not false)
   if (parse) {
-    // let parsedResponse
     try {
       response = response = await response[parse]()
 
@@ -47,10 +47,10 @@ const handleRequest = async (
       }
     } catch (parseError: any) {
       !error && (error = Object.assign(new Error(parseError.message), { status: response.status, response }))
-      // parsedResponse = response = await response.text()
     }
   }
 
+  // run after handlers
   for (let handler of options.after || []) {
     let result = await handler(response)
     if (result != undefined) {
@@ -58,7 +58,8 @@ const handleRequest = async (
     }
   }
 
-  if (options.tuple) return [error, error ? undefined : response]
+  // return tuple if tuple is true
+  if (options.array) return [error, error ? undefined : response]
 
   if (error) throw error
 
@@ -85,7 +86,6 @@ export const fetcher = (
       return (...args: any[]) =>
         // @ts-ignore
         handleRequest(prop.toUpperCase(), args, restOptions, base, headers)
-        // request(prop.toUpperCase(), ...args)
     }
   })
 }
