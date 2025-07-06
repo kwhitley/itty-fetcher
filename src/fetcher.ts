@@ -16,11 +16,10 @@ const handleRequest = async (
   let url = new URL(
     childBase,
     childBase.includes('://') ? undefined : base || globalThis.location?.href
-  )
-  let options = { ...globalOptions, ...args.shift(), method }
-  let headers = new Headers(headersInit)
-  let parse = options.parse ?? 'json'
-  let isJSON = parse === 'json'
+  ),
+  options = { ...globalOptions, ...args.shift(), method },
+  headers = new Headers(headersInit),
+  parse = options.parse ?? 'json'
 
   for (let k in options.query || {}) url.searchParams.append(k, options.query[k])
 
@@ -41,7 +40,7 @@ const handleRequest = async (
       parsedResponse = response = await response[parse]()
 
       if (error) {
-        isJSON ? (
+        parse === 'json' ? (
           error = { ...error, ...parsedResponse },
           error!.message = parsedResponse.message ?? error!.message
         ) : (error!.message = parsedResponse ?? error!.message)
