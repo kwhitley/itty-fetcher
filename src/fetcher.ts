@@ -74,22 +74,18 @@ export const fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject
 ): Fetcher => {
-  let options = typeof optionsOrBase == 'string'
-    ? { base: optionsOrBase, ...additionalOptions }
-    : optionsOrBase || {}
-
   let {
     base = globalThis.location?.origin || '',
     headers = {},
     ...restOptions
-  } = options
+  } = typeof optionsOrBase == 'string'
+    ? { base: optionsOrBase, ...additionalOptions }
+    : optionsOrBase || {}
 
   // @ts-ignore
   return new Proxy(() => {}, {
-    get(target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') {
-      return (...args: any[]) =>
-        // @ts-ignore
-        handleRequest(prop.toUpperCase(), args, restOptions, base, headers)
-    }
+    get: (target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') => (...args: any[]) =>
+      // @ts-ignore
+      handleRequest(prop.toUpperCase(), args, restOptions, base, headers)
   })
 }
