@@ -363,48 +363,52 @@ const tests: TestTree = {
     },
     'can catch and handle errors': async ({ resolve }) => {
       // @ts-ignore
+      let error: any = null
       const result = await fetcher({ fetch: create404Response })
         .get('/missing')
-        .catch((error) => ({ error: error.status }))
+        .catch((err) => error = err)
 
-      expect(result.error).toBe(404)
+      // expect(result).toBeUndefined()
+      expect(error?.status).toBe(404)
+      expect(error?.response).toBeInstanceOf(Response)
+      resolve()
+    },
+    'can catch and handle errors with JSON body': async ({ resolve }) => {
+      // @ts-ignore
+      let error: any = null
+      const result = await fetcher({ fetch: create404WithBodyResponse })
+        .get('/missing')
+        .catch((err) => error = err)
+
+      expect(error?.status).toBe(404)
+      expect(error?.error).toBe('Not found')
+      expect(error?.response).toBeInstanceOf(Response)
       resolve()
     },
   },
   'TUPLE MODE': {
     'successful requests': {
-      'returns [response, null] for successful requests': async ({ resolve }) => {
+      'returns [undefined, response] for successful requests': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: createMockFetch(),
           tuple: true
         }).get('/')
 
         expect(response).toEqual(MOCK_OBJECT)
-        expect(error).toBe(false)
-        resolve()
-      },
-      'works with different HTTP methods': async ({ resolve }) => {
-        // @ts-ignore
-        const [response, error] = await fetcher({
-          fetch: createMockFetch(),
-          tuple: true
-        }).post('/', MOCK_OBJECT)
-
-        expect(response).toEqual(MOCK_OBJECT)
-        expect(error).toBe(false)
+        expect(error).toBeUndefined()
         resolve()
       },
     },
     'error scenarios': {
-      '404 without body returns [parsed_response, error]': async ({ resolve }) => {
+      '404 without body returns [error, undefined]': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: create404Response,
           tuple: true
         }).get('/missing')
 
-        expect(response).toBe('') // Empty text response when parsed
+        expect(response).toBe(undefined) // Empty text response when parsed
         expect(error).toBeTruthy()
         expect(error.status).toBe(404)
         expect(error.response).toBeInstanceOf(Response)
@@ -412,42 +416,42 @@ const tests: TestTree = {
         expect(error.message).toBe('')
         resolve()
       },
-      '404 with JSON body returns [parsed_response, error]': async ({ resolve }) => {
+      '404 with JSON body returns [error, undefined]': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: create404WithBodyResponse,
           tuple: true
         }).get('/missing')
 
-        expect(response).toEqual({ status: 404, error: 'Not found' })
+        expect(response).toBe(undefined)
         expect(error).toBeTruthy()
         expect(error.status).toBe(404)
         expect(error.response).toBeInstanceOf(Response)
         expect(error.response.status).toBe(404)
         resolve()
       },
-      '400 with JSON body returns [parsed_response, error]': async ({ resolve }) => {
+      '400 with JSON body returns [error, undefined]': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: create400WithJsonBodyResponse,
           tuple: true
         }).get('/invalid')
 
-        expect(response).toEqual({ error: 'Invalid request parameters' })
+        expect(response).toBe(undefined)
         expect(error).toBeTruthy()
         expect(error.status).toBe(400)
         expect(error.response).toBeInstanceOf(Response)
         expect(error.response.status).toBe(400)
         resolve()
       },
-      '500 with text body returns [parsed_response, error]': async ({ resolve }) => {
+      '500 with text body returns [error, undefined]': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: create500WithTextBodyResponse,
           tuple: true
         }).get('/server-error')
 
-        expect(response).toBe('Internal server error occurred')
+        expect(response).toBe(undefined)
         expect(error).toBeTruthy()
         expect(error.status).toBe(500)
         expect(error.response).toBeInstanceOf(Response)
@@ -456,28 +460,27 @@ const tests: TestTree = {
       },
     },
     'with parse: false': {
-      'successful request returns [Response, null]': async ({ resolve }) => {
+      'successful request returns [undefined, Response]': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: createMockFetch(),
           tuple: true,
           parse: false
         }).get('/')
 
         expect(response).toBeInstanceOf(Response)
-        expect(error).toBe(false)
+        expect(error).toBeUndefined()
         resolve()
       },
-      'error request returns [Response, error]': async ({ resolve }) => {
+      'error request returns [error, undefined]': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: create404WithBodyResponse,
           tuple: true,
           parse: false
         }).get('/missing')
 
-        expect(response).toBeInstanceOf(Response)
-        expect(response.status).toBe(404)
+        expect(response).toBeUndefined()
         expect(error).toBeTruthy()
         expect(error.status).toBe(404)
         expect(error.response).toBeInstanceOf(Response)
@@ -488,7 +491,7 @@ const tests: TestTree = {
     'with after handlers': {
       'transforms response in tuple mode': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        const [error, response] = await fetcher({
           fetch: createMockFetch(),
           tuple: true,
           after: [
@@ -499,24 +502,25 @@ const tests: TestTree = {
 
         expect(response.transformed).toBe(true)
         expect(response.foo).toBe('bar')
-        expect(error).toBe(false)
+        expect(error).toBeUndefined()
         resolve()
       },
       'does run after stage with errors': async ({ resolve }) => {
         // @ts-ignore
-        const [response, error] = await fetcher({
+        let processed = false
+        const [error, response] = await fetcher({
           fetch: create404WithBodyResponse,
           tuple: true,
           after: [
             // @ts-ignore
-            async (data) => ({ ...data, processed: true })
+            async (data) => { processed = true }
           ]
         }).get('/missing')
 
-        expect(response.processed).toBe(true)
-        expect(response.status).toBe(404)
+        expect(response).toBe(undefined)
         expect(error).toBeTruthy()
         expect(error.status).toBe(404)
+        expect(processed).toBe(true)
         resolve()
       },
     },

@@ -7,6 +7,7 @@ export type FetcherOptionsObject = {
   parse?: boolean
   encode?: boolean
   tuple?: boolean
+  as?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   after?: ResponseHandler[]
 } & RequestInit & Record<string, any>
 

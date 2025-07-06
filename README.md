@@ -25,7 +25,7 @@ Ultra tiny (~700 bytes) wrapper around native fetch to remove boilerplate from y
 Itty Fetcher simplifies API requests by:
 
 - **Automatically parsing responses** (JSON/text) so you don't have to
-- **Serializing object payloads** automatically 
+- **Serializing object payloads** automatically
 - **Actually throwing HTTP status errors** (unlike native fetch)
 - **Supporting all native fetch options** with zero breaking changes
 - **Providing a fluent, chainable API** for better developer experience
@@ -67,7 +67,7 @@ import { fetcher } from 'itty-fetcher'
 ...or simply paste this into your environment/console:
 <!-- BEGIN SNIPPET -->
 ```ts
-let fetcher=(e,t)=>{let s="string"==typeof e?{base:e,...t}:e||{},{base:o=globalThis.location?.origin||"",headers:n={},...r}=s,a=(e,...t)=>(async(e,t,s,o,n,r=("string"==typeof t[0]?t.shift():""),a=("get"!=e?t.shift():null))=>{let i=new URL(r,r.includes("://")?void 0:o||globalThis.location?.href),l={...s,...t.shift(),method:e},f=new Headers(n);for(let e in l.query||{})i.searchParams.append(e,l.query[e]);if(a){let e="string"==typeof a;l.body=0==l.encode||e?a:JSON.stringify(a),!e&&!1!==l.encode&&f.set("content-type","application/json")}for(let[e,t]of new Headers(l.headers||[]))f.set(e,t);let c=await(l.fetch||fetch)(new Request(i,{...l,headers:f})),d=!c.ok&&Object.assign(new Error(c.statusText),{status:c.status,response:c});!1!==l.parse&&(c=await(c.headers.get("content-type")?.includes("json")?c.json():c.text()));for(let e of l.after||[]){let t=await e(c);void 0!==t&&(c=t)}if(l.tuple)return[c,d];if(d)throw d;return c})(e,t,r,o,n),i=(...e)=>a("get",...e);for(let e of["get","post","put","patch","delete"])i[e]=(...t)=>a(e,...t);return i};
+let fetcher=(e,s)=>{let t="string"==typeof e?{base:e,...s}:e||{},{base:a=globalThis.location?.origin||"",headers:o={},...r}=t,n=(e,...s)=>(async(e,s,t,a,o,r=("string"==typeof s[0]?s.shift():""),n=("get"!=e?s.shift():null))=>{let i=new URL(r,r.includes("://")?void 0:a||globalThis.location?.href),l={...t,...s.shift(),method:e},f=new Headers(o);l.as=l.as??"json";for(let e in l.query||{})i.searchParams.append(e,l.query[e]);if(n){let e="string"==typeof n;l.body=0==l.encode||e?n:JSON.stringify(n),!e&&0!=l.encode&&f.set("content-type","application/json")}for(let[e,s]of new Headers(l.headers||[]))f.set(e,s);let g,c=await(l.fetch||fetch)(new Request(i,{...l,headers:f}));if(c.ok||(g={status:c.status,message:c.statusText,response:c}),!1!==l.parse)try{let e=l.as;"json"!==e||c.headers.get("content-type")?.includes("json")||(e="text");let s=await c[e]();g?"json"===e?(g={...g,...s},g.message=s.message??g.message):g.message=s??g.message:c=s}catch(e){g||(g={status:c.status,message:"Parse error: "+(e?.message||"Unknown error"),response:c})}for(let e of l.after||[]){let s=await e(c);void 0!==s&&(c=s)}if(l.tuple)return[g,g?void 0:c];if(g)throw Object.assign(new Error(g.message),g);return c})(e,s,r,a,o),i=(...e)=>n("get",...e);for(let e of["get","post","put","patch","delete"])i[e]=(...s)=>n(e,...s);return i};
 ```
 <!-- END SNIPPET -->
 
@@ -161,7 +161,7 @@ const api = fetcher({
   after: [
     // Add timestamp to all responses
     async (response) => ({ ...response, timestamp: Date.now() }),
-    
+
     // Log all responses
     async (response) => {
       console.log('Response received:', response)
@@ -227,7 +227,7 @@ const data = await fetch('https://api.example.com/users')
   })
 ```
 
-## POST - fetcher vs. fetch  
+## POST - fetcher vs. fetch
 ```ts
 // itty-fetcher (saves ~8 lines of boilerplate)
 await fetcher().post('https://api.example.com/users', { name: 'John' })
