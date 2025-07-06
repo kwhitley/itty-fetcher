@@ -35,15 +35,15 @@ const handleRequest = async (
       error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined
 
   if (parse) {
-    let parsedResponse
+    // let parsedResponse
     try {
-      parsedResponse = response = await response[parse]()
+      response = response = await response[parse]()
 
       if (error) {
         parse === 'json' ? (
-          error = { ...error, ...parsedResponse },
-          error!.message = parsedResponse.message ?? error!.message
-        ) : (error!.message = parsedResponse ?? error!.message)
+          error = { ...error, ...response },
+          error!.message = response.message ?? error!.message
+        ) : (error!.message = response ?? error!.message)
       }
     } catch (parseError: any) {
       !error && (error = Object.assign(new Error(parseError.message), { status: response.status, response }))
@@ -53,7 +53,9 @@ const handleRequest = async (
 
   for (let handler of options.after || []) {
     let result = await handler(response)
-    result !== undefined && (response = result)
+    if (result != undefined) {
+      response = result
+    }
   }
 
   if (options.tuple) return [error, error ? undefined : response]
@@ -77,16 +79,13 @@ export const fetcher = (
     ...restOptions
   } = options
 
-  let request = (method: string, ...args: any[]) =>
-    // @ts-ignore
-    handleRequest(method, args, restOptions, base, headers)
-
-  let fn = (...args: any[]) => request('get', ...args)
-
-  for (let method of ['get', 'post', 'put', 'patch', 'delete']) {
-    // @ts-ignore
-    fn[method] = (...args: any[]) => request(method.toUpperCase(), ...args)
-  }
-
-  return fn as any
+  // @ts-ignore
+  return new Proxy(() => {}, {
+    get(target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') {
+      return (...args: any[]) =>
+        // @ts-ignore
+        handleRequest(prop.toUpperCase(), args, restOptions, base, headers)
+        // request(prop.toUpperCase(), ...args)
+    }
+  })
 }
