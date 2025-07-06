@@ -70,26 +70,6 @@ const handleRequest = async (
   return response
 }
 
-// export const fetcher = (
-//   optionsOrBase?: FetcherOptions,
-//   additionalOptions?: FetcherOptionsObject
-// ): Fetcher => {
-//   let {
-//     base = globalThis.location?.origin || '',
-//     headers = {},
-//     ...restOptions
-//   } = typeof optionsOrBase == 'string'
-//     ? { base: optionsOrBase, ...additionalOptions }
-//     : optionsOrBase || {}
-
-//   // @ts-ignore
-//   return new Proxy(() => {}, {
-//     get: (target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') => (...args: any[]) =>
-//       // @ts-ignore
-//       handleRequest(prop.toUpperCase(), args, restOptions, base, headers)
-//   })
-// }
-
 export const fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject
