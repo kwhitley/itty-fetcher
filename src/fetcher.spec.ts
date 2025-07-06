@@ -315,7 +315,7 @@ const tests: TestTree = {
         await fetcher({
           base: 'https://foo.bar?foo=bar',
           fetch: createMockFetch(spy),
-        }).get({ query: { page: 2 } })
+        }).get('', { query: { page: 2 } })
         expect(capturedQuery).toEqual({ foo: 'bar', page: '2' })
         resolve()
       },
@@ -630,26 +630,26 @@ const tests: TestTree = {
         expect(capturedMethod).toBe('POST')
         resolve()
       },
-      '.post(payload, options)': async ({ resolve }) => {
-        let capturedMethod = ''
-        const spy = mock((r: Request) => {
-          capturedMethod = r.method
-          return r.method
-        })
-        await fetcher({ fetch: createMockFetch(spy) }).post(MOCK_OBJECT, {})
-        expect(capturedMethod).toBe('POST')
-        resolve()
-      },
-      '.get(options)': async ({ resolve }) => {
-        let capturedMethod = ''
-        const spy = mock((r: Request) => {
-          capturedMethod = r.method
-          return r.method
-        })
-        await fetcher({ fetch: createMockFetch(spy) }).get({})
-        expect(capturedMethod).toBe('GET')
-        resolve()
-      },
+      // '.post(payload, options)': async ({ resolve }) => {
+      //   let capturedMethod = ''
+      //   const spy = mock((r: Request) => {
+      //     capturedMethod = r.method
+      //     return r.method
+      //   })
+      //   await fetcher({ fetch: createMockFetch(spy) }).post(MOCK_OBJECT, {})
+      //   expect(capturedMethod).toBe('POST')
+      //   resolve()
+      // },
+      // '.get(options)': async ({ resolve }) => {
+      //   let capturedMethod = ''
+      //   const spy = mock((r: Request) => {
+      //     capturedMethod = r.method
+      //     return r.method
+      //   })
+      //   await fetcher({ fetch: createMockFetch(spy) }).get({})
+      //   expect(capturedMethod).toBe('GET')
+      //   resolve()
+      // },
     },
     'handles absolute URLs': async ({ resolve }) => {
       let capturedUrl = ''

@@ -10,7 +10,7 @@ const handleRequest = async (
   globalOptions: FetcherOptionsObject,
   base: string,
   headersInit: HeadersInit,
-  childBase = typeof args[0] == 'string' ? args.shift() : '',
+  childBase = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
   let url = new URL(
