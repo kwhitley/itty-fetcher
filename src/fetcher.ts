@@ -9,7 +9,6 @@ const handleRequest = async (
   args: any[],
   globalOptions: FetcherOptionsObject,
   base: string = '',
-  // headersInit: HeadersInit,
   url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
@@ -90,8 +89,7 @@ export const fetcher = (
         args,
         opts,
         // @ts-ignore
-        opts.base, // || globalThis.location?.origin || '',
-        // opts.headers || {}
+        opts.base,
       )
   })
 }
