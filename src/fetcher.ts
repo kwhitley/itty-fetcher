@@ -8,16 +8,17 @@ const handleRequest = async (
   method: string,
   args: any[],
   globalOptions: FetcherOptionsObject,
-  base: string = '',
+  // base: string = '',
   url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
   url = new URL(
     (url.includes('://')
       ? url
-      : (base.includes('://')
-          ? base
-          : (globalThis.location?.href + '/' + base)
+      // @ts-ignore
+      : (globalOptions.base?.includes?.('://')
+          ? globalOptions.base
+          : (globalThis.location?.href + '/' + (globalOptions.base ?? ''))
         ) + (url ? '/' + url : '')).replace(/\/+/g, '/')
   )
   let options = { ...globalOptions, ...args.shift(), method },
@@ -89,7 +90,7 @@ export const fetcher = (
         args,
         opts,
         // @ts-ignore
-        opts.base,
+        // opts.base,
       )
   })
 }
