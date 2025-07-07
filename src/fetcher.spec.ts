@@ -615,11 +615,15 @@ const tests: TestTree = {
     },
     'fetcher(RELATIVE_PATH_SLASH).get()': async ({ fetch, request }) => {
       await fetcher(RELATIVE_PATH_SLASH, { fetch }).get('')
-      expect(request.url).toBe(`${LOCAL_ORIGIN}/${RELATIVE_PATH_NOSLASH}`)
+      expect(request.url).toBe(`${LOCAL_ORIGIN}${RELATIVE_PATH_SLASH}`)
     },
     'fetcher(relativeUrl).get(relativeUrl)': async ({ fetch, request }) => {
       await fetcher('/cats', { fetch }).get('/dogs')
       expect(request.url).toBe(`${LOCAL_ORIGIN}/cats/dogs`)
+    },
+    'fetcher().get(RELATIVE_PATH_NOSLASH)': async ({ fetch, request }) => {
+      await fetcher({ fetch }).get(RELATIVE_PATH_NOSLASH)
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/${RELATIVE_PATH_NOSLASH}`)
     },
     'fetcher(ABSOLUTE_ORIGIN_NOSLASH).get(relativeUrl)': async ({ fetch, request }) => {
       await fetcher(ABSOLUTE_ORIGIN_NOSLASH, { fetch }).get('/dogs')

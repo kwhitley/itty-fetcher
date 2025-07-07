@@ -9,20 +9,20 @@ const handleRequest = async (
   args: any[],
   globalOptions: FetcherOptionsObject,
   base: string = '',
-  headersInit: HeadersInit,
+  // headersInit: HeadersInit,
   url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
   url = new URL(
-    url.includes('://')
+    (url.includes('://')
       ? url
       : (base.includes('://')
           ? base
-          : (globalThis.location?.href + base)
-        ).replace(/\/$/,'') + (url ? '/' + url.replace(/^\//,'') : '')
+          : (globalThis.location?.href + '/' + base)
+        ) + (url ? '/' + url : '')).replace(/\/+/g, '/')
   )
   let options = { ...globalOptions, ...args.shift(), method },
-  headers = new Headers(headersInit),
+  headers = new Headers(globalOptions.headers || {}),
   parse = options.parse ?? 'json',
   isString = typeof payload == 'string'
 
@@ -91,7 +91,7 @@ export const fetcher = (
         opts,
         // @ts-ignore
         opts.base, // || globalThis.location?.origin || '',
-        opts.headers || {}
+        // opts.headers || {}
       )
   })
 }
