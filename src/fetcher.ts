@@ -8,16 +8,20 @@ const handleRequest = async (
   method: string,
   args: any[],
   globalOptions: FetcherOptionsObject,
-  base: string,
+  base: string = '',
   headersInit: HeadersInit,
-  childBase = args.shift() ?? '',
+  url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
-  let url = new URL(
-    childBase,
-    childBase.includes('://') ? undefined : base || globalThis.location?.href
-  ),
-  options = { ...globalOptions, ...args.shift(), method },
+  url = new URL(
+    url.includes('://')
+      ? url
+      : (base.includes('://')
+          ? base
+          : (globalThis.location?.href + base)
+        ).replace(/\/$/,'') + (url ? '/' + url.replace(/^\//,'') : '')
+  )
+  let options = { ...globalOptions, ...args.shift(), method },
   headers = new Headers(headersInit),
   parse = options.parse ?? 'json',
   isString = typeof payload == 'string'
@@ -86,7 +90,7 @@ export const fetcher = (
         args,
         opts,
         // @ts-ignore
-        opts.base || globalThis.location?.origin || '',
+        opts.base, // || globalThis.location?.origin || '',
         opts.headers || {}
       )
   })

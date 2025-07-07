@@ -1,24 +1,33 @@
-import { describe, afterAll, expect, it, mock } from 'bun:test'
+import { describe, expect, it, mock } from 'bun:test'
 import { fetcher } from './fetcher'
 import type { Fetcher } from './types'
 
+const LOCAL_ORIGIN = 'https://localhost:3000'
+const ABSOLUTE_ORIGIN_NOSLASH = 'https://localhost:4444/v3'
+const ABSOLUTE_ORIGIN_SLASH = 'https://localhost:4444/v3/'
+const RELATIVE_PATH_NOSLASH = 'cat/dog'
+const RELATIVE_PATH_SLASH = '/cat/dog/'
+
 // Mock global location for browser-like behavior in tests
 globalThis.location = {
-  href: 'https://test.example.com/path',
-  origin: 'https://test.example.com',
-  pathname: '/path',
+  href: LOCAL_ORIGIN,
+  origin: LOCAL_ORIGIN,
+  pathname: '/',
   search: '',
   hash: '',
-  host: 'test.example.com',
-  hostname: 'test.example.com',
+  host: 'localhost',
+  hostname: 'localhost',
   port: '',
   protocol: 'https:'
 } as Location
 
 type TestLeaf = (args: {
   fetcherInstance: Fetcher,
-  resolve: () => void,
+  // resolve: () => void,
+  // getUrl: (r: Request) => string,
   spy: () => void,
+  fetch?: typeof fetch,
+  request: Request,
   getFetcher: (options?: any) => Fetcher
 }) => void
 
@@ -98,7 +107,7 @@ const tests: TestTree = {
   },
   'HTTP METHODS': {
     'GET': {
-      'makes GET request': async ({ resolve }) => {
+      'makes GET request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -107,9 +116,8 @@ const tests: TestTree = {
         const response = await fetcher({ fetch: createMockFetch(spy) }).get('/')
         expect(capturedMethod).toBe('GET')
         expect(response).toEqual(MOCK_OBJECT)
-        resolve()
       },
-      'handles no URL parameter': async ({ resolve }) => {
+      'handles no URL parameter': async () => {
         let capturedUrl = ''
         const spy = mock((r: Request) => {
           capturedUrl = r.url
@@ -117,11 +125,10 @@ const tests: TestTree = {
         })
         await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).get()
         expect(capturedUrl).toBe('https://foo.bar/')
-        resolve()
       },
     },
     'POST': {
-      'makes POST request': async ({ resolve }) => {
+      'makes POST request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -130,9 +137,8 @@ const tests: TestTree = {
         const response = await fetcher({ fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
         expect(capturedMethod).toBe('POST')
         expect(response).toEqual(MOCK_OBJECT)
-        resolve()
       },
-      'serializes object payload': async ({ resolve }) => {
+      'serializes object payload': async () => {
         let capturedPayload = null
         const spy = mock(async (r: Request) => {
           capturedPayload = await r.json()
@@ -141,9 +147,8 @@ const tests: TestTree = {
         await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
         // @ts-ignore
         expect(capturedPayload).toEqual(MOCK_OBJECT)
-        resolve()
       },
-      'sets content-type header for JSON': async ({ resolve }) => {
+      'sets content-type header for JSON': async () => {
         let capturedContentType = ''
         const spy = mock((r: Request) => {
           capturedContentType = r.headers.get('content-type') || ''
@@ -151,11 +156,10 @@ const tests: TestTree = {
         })
         await fetcher({ fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
         expect(capturedContentType).toBe('application/json')
-        resolve()
       },
     },
     'PUT': {
-      'makes PUT request': async ({ resolve }) => {
+      'makes PUT request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -163,11 +167,10 @@ const tests: TestTree = {
         })
         await fetcher({ fetch: createMockFetch(spy) }).put('/', MOCK_OBJECT)
         expect(capturedMethod).toBe('PUT')
-        resolve()
       },
     },
     'PATCH': {
-      'makes PATCH request': async ({ resolve }) => {
+      'makes PATCH request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -175,11 +178,10 @@ const tests: TestTree = {
         })
         await fetcher({ fetch: createMockFetch(spy) }).patch('/', MOCK_OBJECT)
         expect(capturedMethod).toBe('PATCH')
-        resolve()
       },
     },
     'DELETE': {
-      'makes DELETE request': async ({ resolve }) => {
+      'makes DELETE request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
           capturedMethod = r.method
@@ -187,13 +189,12 @@ const tests: TestTree = {
         })
         await fetcher({ fetch: createMockFetch(spy) }).delete('/', MOCK_OBJECT)
         expect(capturedMethod).toBe('DELETE')
-        resolve()
       },
     },
   },
   'OPTIONS': {
     '{ base: string }': {
-      'prepends base URL to requests': async ({ resolve }) => {
+        'prepends base URL to requests': async () => {
         let capturedUrl = ''
         const spy = mock((r: Request) => {
           capturedUrl = r.url
@@ -201,9 +202,8 @@ const tests: TestTree = {
         })
         await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).get('/cats')
         expect(capturedUrl).toBe('https://foo.bar/cats')
-        resolve()
       },
-      'handles base URL with trailing slash': async ({ resolve }) => {
+      'handles base URL with trailing slash': async () => {
         let capturedUrl = ''
         const spy = mock((r: Request) => {
           capturedUrl = r.url
@@ -211,48 +211,43 @@ const tests: TestTree = {
         })
         await fetcher({ base: 'https://foo.bar/', fetch: createMockFetch(spy) }).get('/cats')
         expect(capturedUrl).toBe('https://foo.bar/cats')
-        resolve()
       },
     },
     '{ parse: false }': {
-      'returns raw Response object': async ({ resolve }) => {
+      'returns raw Response object': async () => {
         const response = await fetcher({
           fetch: createMockFetch(),
           parse: false
         }).get('/')
         expect(response).toBeInstanceOf(Response)
-        resolve()
       },
     },
     '{ parse: "text" }': {
-      'parses responses as text': async ({ resolve }) => {
+      'parses responses as text': async () => {
         const spy = mock(() => {})
         // @ts-ignore
         const response = await fetcher({ fetch: createTextResponse(spy), parse: 'text' }).get('/')
         expect(response).toBe(MOCK_TEXT)
-        resolve()
       },
     },
     '{ parse: "blob" }': {
-      'parses responses as blob': async ({ resolve }) => {
+      'parses responses as blob': async () => {
         const spy = mock(() => {})
         // @ts-ignore
         const response = await fetcher({ fetch: createTextResponse(spy), parse: 'blob' }).get('/')
         expect(response).toBeInstanceOf(Blob)
-        resolve()
       },
     },
     '{ parse: "arrayBuffer" }': {
-      'parses responses as arrayBuffer': async ({ resolve }) => {
+      'parses responses as arrayBuffer': async () => {
         const spy = mock(() => {})
         // @ts-ignore
         const response = await fetcher({ fetch: createTextResponse(spy), parse: 'arrayBuffer' }).get('/')
         expect(response).toBeInstanceOf(ArrayBuffer)
-        resolve()
       },
     },
     '{ headers: object }': {
-      'adds headers to requests': async ({ resolve }) => {
+      'adds headers to requests': async () => {
         let capturedHeader = ''
         const spy = mock((r: Request) => {
           capturedHeader = r.headers.get('foo') || ''
@@ -264,9 +259,8 @@ const tests: TestTree = {
           headers: { foo: 'bar' }
         }).get('/cats')
         expect(capturedHeader).toBe('bar')
-        resolve()
       },
-      'merges base headers with request headers': async ({ resolve }) => {
+      'merges base headers with request headers': async () => {
         let capturedHeaders: [string, string][] = []
         const spy = mock((r: Request) => {
           capturedHeaders = [...(r.headers as any).entries()]
@@ -283,9 +277,8 @@ const tests: TestTree = {
           ['cat', 'dog'],
           ['foo', 'baz'],
         ])
-        resolve()
       },
-      'handles Headers object': async ({ resolve }) => {
+      'handles Headers object': async () => {
         let capturedHeaders: [string, string][] = []
         const spy = mock((r: Request) => {
           capturedHeaders = [...(r.headers as any).entries()]
@@ -300,11 +293,10 @@ const tests: TestTree = {
           headers,
         }).get('/cats')
         expect(capturedHeaders).toEqual([['foo', 'bar']])
-        resolve()
       },
     },
     '{ query: object }': {
-      'appends query parameters': async ({ resolve }) => {
+      'appends query parameters': async () => {
         let capturedQuery: Record<string, string> = {}
         const spy = mock((r: Request) => {
           const url = new URL(r.url)
@@ -317,11 +309,10 @@ const tests: TestTree = {
           fetch: createMockFetch(spy),
         }).get('', { query: { page: 2 } })
         expect(capturedQuery).toEqual({ foo: 'bar', page: '2' })
-        resolve()
       },
     },
     '{ encode: false }': {
-      'does not encode payload': async ({ resolve }) => {
+      'does not encode payload': async () => {
         let capturedText = ''
         const spy = mock(async (r: Request) => {
           capturedText = await r.text()
@@ -333,11 +324,10 @@ const tests: TestTree = {
           encode: false
         }).post('/', payload)
         expect(capturedText).toBe(payload)
-        resolve()
       },
     },
     '{ after: Array<ResponseHandler> }': {
-      'transforms response when handler returns value': async ({ resolve }) => {
+      'transforms response when handler returns value': async () => {
         const response = await fetcher({
           fetch: createMockFetch(),
           after: [
@@ -346,9 +336,8 @@ const tests: TestTree = {
           ]
         }).get('/')
         expect(response.transformed).toBe(true)
-        resolve()
       },
-      'does not transform when handler returns undefined': async ({ resolve }) => {
+      'does not transform when handler returns undefined': async () => {
         let sideEffectTriggered = false
         const response = await fetcher({
           fetch: createMockFetch(),
@@ -362,9 +351,8 @@ const tests: TestTree = {
         }).get('/')
         expect(sideEffectTriggered).toBe(true)
         expect(response).toEqual(MOCK_OBJECT) // Original response unchanged
-        resolve()
       },
-      'chains handlers correctly with mixed undefined returns': async ({ resolve }) => {
+      'chains handlers correctly with mixed undefined returns': async () => {
         let handler1Called = false
         let handler2Called = false
         const response = await fetcher({
@@ -390,12 +378,11 @@ const tests: TestTree = {
         expect(response.step1).toBe(true)
         expect(response.step3).toBe(true)
         expect(response.foo).toBe('bar') // Original data preserved
-        resolve()
       },
     },
     '{ array: true }': {
       'successful requests': {
-        'returns [undefined, response] for successful requests': async ({ resolve }) => {
+        'returns [undefined, response] for successful requests': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: createMockFetch(),
@@ -404,11 +391,10 @@ const tests: TestTree = {
 
           expect(response).toEqual(MOCK_OBJECT)
           expect(error).toBeUndefined()
-          resolve()
         },
       },
       'error scenarios': {
-        '404 without body returns [error, undefined]': async ({ resolve }) => {
+        '404 without body returns [error, undefined]': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create404Response,
@@ -421,9 +407,8 @@ const tests: TestTree = {
           expect(error.response).toBeInstanceOf(Response)
           expect(error.response.status).toBe(404)
           expect(error.message).toBe('')
-          resolve()
         },
-        '404 with JSON body returns [error, undefined]': async ({ resolve }) => {
+        '404 with JSON body returns [error, undefined]': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create404WithBodyResponse,
@@ -435,9 +420,8 @@ const tests: TestTree = {
           expect(error.status).toBe(404)
           expect(error.response).toBeInstanceOf(Response)
           expect(error.response.status).toBe(404)
-          resolve()
         },
-        '400 with JSON body returns [error, undefined]': async ({ resolve }) => {
+        '400 with JSON body returns [error, undefined]': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create400WithJsonBodyResponse,
@@ -449,9 +433,8 @@ const tests: TestTree = {
           expect(error.status).toBe(400)
           expect(error.response).toBeInstanceOf(Response)
           expect(error.response.status).toBe(400)
-          resolve()
         },
-        '500 with text body returns [error, undefined]': async ({ resolve }) => {
+        '500 with text body returns [error, undefined]': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create500WithTextBodyResponse,
@@ -463,11 +446,10 @@ const tests: TestTree = {
           expect(error.status).toBe(500)
           expect(error.response).toBeInstanceOf(Response)
           expect(error.response.status).toBe(500)
-          resolve()
         },
       },
       'with parse: false': {
-        'successful request returns [undefined, Response]': async ({ resolve }) => {
+        'successful request returns [undefined, Response]': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: createMockFetch(),
@@ -477,9 +459,8 @@ const tests: TestTree = {
 
           expect(response).toBeInstanceOf(Response)
           expect(error).toBeUndefined()
-          resolve()
         },
-        'error request returns [error, undefined]': async ({ resolve }) => {
+        'error request returns [error, undefined]': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create404WithBodyResponse,
@@ -492,11 +473,10 @@ const tests: TestTree = {
           expect(error.status).toBe(404)
           expect(error.response).toBeInstanceOf(Response)
           expect(error.response.status).toBe(404)
-          resolve()
         },
       },
       'with after handlers': {
-        'transforms response in array mode': async ({ resolve }) => {
+        'transforms response in array mode': async () => {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: createMockFetch(),
@@ -510,9 +490,8 @@ const tests: TestTree = {
           expect(response.transformed).toBe(true)
           expect(response.foo).toBe('bar')
           expect(error).toBeUndefined()
-          resolve()
         },
-        'does run after stage with errors': async ({ resolve }) => {
+        'does run after stage with errors': async () => {
           // @ts-ignore
           let processed = false
           const [error, response] = await fetcher({
@@ -528,25 +507,22 @@ const tests: TestTree = {
           expect(error).toBeTruthy()
           expect(error.status).toBe(404)
           expect(processed).toBe(true)
-          resolve()
         },
       },
     },
     'ERROR HANDLING': {
       'throws on HTTP error status': {
-        '404 without body': async ({ resolve }) => {
+        '404 without body': async () => {
           try {
-            // @ts-ignore
             await fetcher({ fetch: create404Response }).get('/missing')
             expect(false).toBe(true) // Should not reach here
           } catch (error) {
             expect(error.status).toBe(404)
             expect(error.response).toBeInstanceOf(Response)
             expect(error.response.status).toBe(404)
-            resolve()
           }
         },
-        '404 with JSON error body': async ({ resolve }) => {
+        '404 with JSON error body': async () => {
           try {
             // @ts-ignore
             await fetcher({ fetch: create404WithBodyResponse }).get('/missing')
@@ -555,10 +531,9 @@ const tests: TestTree = {
             expect(error.status).toBe(404)
             expect(error.response).toBeInstanceOf(Response)
             expect(error.response.status).toBe(404)
-            resolve()
           }
         },
-        '400 with JSON error body': async ({ resolve }) => {
+        '400 with JSON error body': async () => {
           try {
             // @ts-ignore
             await fetcher({ fetch: create400WithJsonBodyResponse }).get('/invalid')
@@ -567,10 +542,9 @@ const tests: TestTree = {
             expect(error.status).toBe(400)
             expect(error.response).toBeInstanceOf(Response)
             expect(error.response.status).toBe(400)
-            resolve()
           }
         },
-        '500 with text error body': async ({ resolve }) => {
+        '500 with text error body': async () => {
           try {
             // @ts-ignore
             await fetcher({ fetch: create500WithTextBodyResponse }).get('/server-error')
@@ -579,11 +553,10 @@ const tests: TestTree = {
             expect(error.status).toBe(500)
             expect(error.response).toBeInstanceOf(Response)
             expect(error.response.status).toBe(500)
-            resolve()
           }
         },
       },
-      'can catch and handle errors': async ({ resolve }) => {
+      'can catch and handle errors': async () => {
         // @ts-ignore
         let error: any = null
         const result = await fetcher({ fetch: create404Response })
@@ -593,9 +566,8 @@ const tests: TestTree = {
         // expect(result).toBeUndefined()
         expect(error?.status).toBe(404)
         expect(error?.response).toBeInstanceOf(Response)
-        resolve()
       },
-      'can catch and handle errors with JSON body': async ({ resolve }) => {
+      'can catch and handle errors with JSON body': async () => {
         // @ts-ignore
         let error: any = null
         const result = await fetcher({ fetch: create404WithBodyResponse })
@@ -605,66 +577,56 @@ const tests: TestTree = {
         expect(error?.status).toBe(404)
         expect(error?.error).toBe('Not found')
         expect(error?.response).toBeInstanceOf(Response)
-        resolve()
       },
     },
   },
   'RESPONSE PARSING': {
     'JSON responses': {
-      'parses JSON by default': async ({ resolve }) => {
+      'parses JSON by default': async () => {
         const response = await fetcher({ fetch: createMockFetch() }).get('/')
         expect(response).toEqual(MOCK_OBJECT)
-        resolve()
       },
     },
   },
   'MISC BEHAVIOR': {
     'handles different argument patterns': {
-      '.post(url, payload, options)': async ({ resolve }) => {
-        let capturedMethod = ''
-        const spy = mock((r: Request) => {
-          capturedMethod = r.method
-          return r.method
-        })
-        await fetcher({ fetch: createMockFetch(spy) }).post('/test', MOCK_OBJECT, {})
-        expect(capturedMethod).toBe('POST')
-        resolve()
+      '.post(url, payload, options)': async ({ fetch, request }) => {
+        await fetcher({ fetch }).post('/test', MOCK_OBJECT, {})
+        expect(request.method).toBe('POST')
       },
-      // '.post(payload, options)': async ({ resolve }) => {
-      //   let capturedMethod = ''
-      //   const spy = mock((r: Request) => {
-      //     capturedMethod = r.method
-      //     return r.method
-      //   })
-      //   await fetcher({ fetch: createMockFetch(spy) }).post(MOCK_OBJECT, {})
-      //   expect(capturedMethod).toBe('POST')
-      //   resolve()
-      // },
-      // '.get(options)': async ({ resolve }) => {
-      //   let capturedMethod = ''
-      //   const spy = mock((r: Request) => {
-      //     capturedMethod = r.method
-      //     return r.method
-      //   })
-      //   await fetcher({ fetch: createMockFetch(spy) }).get({})
-      //   expect(capturedMethod).toBe('GET')
-      //   resolve()
-      // },
     },
-    'handles absolute URLs': async ({ resolve }) => {
-      let capturedUrl = ''
-      const spy = mock((r: Request) => {
-        capturedUrl = r.url
-        return r.url
-      })
-      await fetcher({
-        base: 'https://foo.bar',
-        fetch: createMockFetch(spy)
-      }).get('https://other.com/api')
-      expect(capturedUrl).toBe('https://other.com/api')
-      resolve()
+  },
+  'URL HANDLING': {
+    'fetcher().get(ABSOLUTE_ORIGIN_NOSLASH)': async ({ fetch, request }) => {
+      await fetcher({ fetch }).get(ABSOLUTE_ORIGIN_NOSLASH)
+      expect(request.url).toBe(ABSOLUTE_ORIGIN_NOSLASH)
     },
-  }
+    'fetcher(ABSOLUTE_ORIGIN_NOSLASH).get()': async ({ fetch, request }) => {
+      await fetcher(ABSOLUTE_ORIGIN_NOSLASH, { fetch }).get()
+      expect(request.url).toBe(ABSOLUTE_ORIGIN_NOSLASH)
+    },
+    'fetcher(ABSOLUTE_ORIGIN_NOSLASH).get(RELATIVE_PATH_NOSLASH)': async ({ fetch, request }) => {
+      await fetcher(ABSOLUTE_ORIGIN_NOSLASH, { fetch }).get(RELATIVE_PATH_NOSLASH)
+      expect(request.url).toBe(`${ABSOLUTE_ORIGIN_NOSLASH}/${RELATIVE_PATH_NOSLASH}`)
+    },
+    'fetcher(ABSOLUTE_ORIGIN_SLASH).get(RELATIVE_PATH_SLASH)': async ({ fetch, request }) => {
+      await fetcher(ABSOLUTE_ORIGIN_SLASH, { fetch }).get(RELATIVE_PATH_SLASH)
+      expect(request.url).toBe(`${ABSOLUTE_ORIGIN_NOSLASH}${RELATIVE_PATH_SLASH}`)
+    },
+    'fetcher(RELATIVE_PATH_SLASH).get()': async ({ fetch, request }) => {
+      await fetcher(RELATIVE_PATH_SLASH, { fetch }).get('')
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/${RELATIVE_PATH_NOSLASH}`)
+    },
+    'fetcher(relativeUrl).get(relativeUrl)': async ({ fetch, request }) => {
+      await fetcher('/cats', { fetch }).get('/dogs')
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/cats/dogs`)
+    },
+    'fetcher(ABSOLUTE_ORIGIN_NOSLASH).get(relativeUrl)': async ({ fetch, request }) => {
+      await fetcher(ABSOLUTE_ORIGIN_NOSLASH, { fetch }).get('/dogs')
+      expect(request.url).toBe(`${ABSOLUTE_ORIGIN_NOSLASH}/dogs`)
+    },
+
+  },
 }
 
 // setup function for each test
@@ -683,8 +645,20 @@ const runTests = (tests: TestTree) => {
   for (const [name, test] of Object.entries(tests)) {
     if (typeof test === 'function') {
       if (test.constructor.name === 'AsyncFunction') {
-        // @ts-ignore
-        it(name, () => new Promise(resolve => test({ ...setup(), resolve })))
+        const request = {} as any
+        it(name, async () => test({
+          ...setup(),
+          // @ts-ignore
+          fetch: (r: Request) => {
+            request.url = r.url
+            request.method = r.method
+
+            return Promise.resolve(new Response(STRINGIFIED_OBJECT, {
+              headers: { 'content-type': 'application/json' }
+            }))
+          },
+          request,
+        }))
       } else {
         // @ts-ignore
         it(name, () => test({ ...setup() }))
