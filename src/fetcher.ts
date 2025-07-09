@@ -38,18 +38,22 @@ const handleRequest = async (
   }
 
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
-      error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined
+      error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined // TODO: reverse syntax
 
   // parse response (if parse is not false)
   if (options.parse ?? 'json') {
     try {
       response = response = await response[options.parse ?? 'json']()
 
-      if (error) {
-        options.parse ?? 'json' === 'json' ? (
-          error = { ...error, ...response },
-          error!.message = response.message ?? error!.message
-        ) : (error!.message = response ?? error!.message)
+      // if (error) {
+      //   options.parse ?? 'json' === 'json' ? (
+      //     error = { ...error, ...response },
+      //     error!.message = response.message ?? error!.message
+      //   ) : (error!.message = response ?? error!.message)
+      // }
+      if (error && (options.parse ?? 'json') == 'json') {
+        error = { ...error, ...response }
+        // error!.message = response.message ?? error!.message
       }
     } catch (parseError: any) {
       !error && (error = Object.assign(new Error(parseError.message), { status: response.status, response }))
