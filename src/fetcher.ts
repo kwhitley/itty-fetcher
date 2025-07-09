@@ -11,6 +11,11 @@ const handleRequest = async (
   url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
+  // @ts-ignore
+  let options = { ...globalOptions, ...args.shift(), method },
+  headers = new Headers(globalOptions.headers),
+  isString = typeof payload == 'string'
+
   url = new URL(
     (url.includes('://')
       ? url
@@ -20,9 +25,6 @@ const handleRequest = async (
           : (globalThis.location?.href + '/' + (globalOptions.base ?? ''))
         ) + (url ? '/' + url : '')).replace(/\/+/g, '/')
   )
-  let options = { ...globalOptions, ...args.shift(), method },
-  isString = typeof payload == 'string',
-  headers = new Headers(globalOptions.headers)
 
   for (let k in options.query || {}) {
     url.searchParams.append(k, options.query[k])
@@ -45,15 +47,8 @@ const handleRequest = async (
     try {
       response = response = await response[options.parse ?? 'json']()
 
-      // if (error) {
-      //   options.parse ?? 'json' === 'json' ? (
-      //     error = { ...error, ...response },
-      //     error!.message = response.message ?? error!.message
-      //   ) : (error!.message = response ?? error!.message)
-      // }
       if (error && (options.parse ?? 'json') == 'json') {
         error = { ...error, ...response }
-        // error!.message = response.message ?? error!.message
       }
     } catch (parseError: any) {
       !error && (error = Object.assign(new Error(parseError.message), { status: response.status, response }))
