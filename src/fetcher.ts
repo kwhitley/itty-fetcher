@@ -6,9 +6,8 @@ import type {
 
 const handleRequest = async (
   method: string,
-  args: any[],
   globalOptions: FetcherOptionsObject,
-  // base: string = '',
+  args: any[],
   url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
 ) => {
@@ -78,7 +77,7 @@ export const fetcher = (
   optionsOrBase?: FetcherOptions,
   additionalOptions?: FetcherOptionsObject
 ): Fetcher => {
-  let opts = typeof optionsOrBase == 'string'
+  let baseOptions = typeof optionsOrBase == 'string'
     ? { base: optionsOrBase, ...additionalOptions }
     : optionsOrBase || {}
 
@@ -87,10 +86,8 @@ export const fetcher = (
     get: (target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') => (...args: any) =>
       handleRequest(
         prop.toUpperCase(),
+        baseOptions,
         args,
-        opts,
-        // @ts-ignore
-        // opts.base,
       )
   })
 }
