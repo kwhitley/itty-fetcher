@@ -578,6 +578,16 @@ const tests: TestTree = {
         expect(error?.error).toBe('Not found')
         expect(error?.response).toBeInstanceOf(Response)
       },
+      'can catch and handle errors without JSON body': async () => {
+        // @ts-ignore
+        let error: any = null
+        const result = await fetcher({ fetch: create404Response })
+          .get('/missing')
+          .catch((err) => error = err)
+
+        expect(error?.status).toBe(404)
+        expect(error?.response).toBeInstanceOf(Response)
+      },
     },
   },
   'RESPONSE PARSING': {
@@ -587,13 +597,6 @@ const tests: TestTree = {
         expect(response).toEqual(MOCK_OBJECT)
       },
     },
-    // 'text responses': {
-    //   'parses text by default (without requiring { parse: "text" })': async () => {
-    //     // @ts-ignore
-    //     const response = await fetcher({ fetch: createTextResponse() }).get('/')
-    //     expect(response).toEqual(MOCK_TEXT)
-    //   },
-    // },
   },
   'MISC BEHAVIOR': {
     'handles different argument patterns': {
