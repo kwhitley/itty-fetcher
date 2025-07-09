@@ -10,12 +10,10 @@ const handleRequest = async (
   args: any[],
   url = args.shift() ?? '',
   payload = method != 'GET' ? args.shift() : null,
-) => {
-  // @ts-ignore
-  let options = { ...globalOptions, ...args.shift(), method },
+  options = { ...globalOptions, ...args.shift(), method },
   headers = new Headers(globalOptions.headers),
   isString = typeof payload == 'string'
-
+) => {
   url = new URL(
     (url.includes('://')
       ? url
@@ -40,12 +38,14 @@ const handleRequest = async (
   }
 
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
-      error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined // TODO: reverse syntax
+      error = response.ok
+            ? undefined
+            : Object.assign(new Error(response.statusText), { status: response.status, response })
 
   // parse response (if parse is not false)
   if (options.parse ?? 'json') {
     try {
-      response = response = await response[options.parse ?? 'json']()
+      response = await response[options.parse ?? 'json']()
 
       if (error && (options.parse ?? 'json') == 'json') {
         error = { ...error, ...response }
