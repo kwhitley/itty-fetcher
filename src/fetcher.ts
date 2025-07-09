@@ -12,16 +12,18 @@ const handleRequest = async (
   payload = method != 'GET' ? args.shift() : null,
   options = { ...globalOptions, ...args.shift(), method },
   headers = new Headers(globalOptions.headers),
-  isString = typeof payload == 'string'
+  isString = typeof payload == 'string',
+  baseUrl = globalOptions.base ?? '',
 ) => {
   url = new URL(
     (url.includes('://')
       ? url
       // @ts-ignore
-      : (globalOptions.base?.includes?.('://')
-          ? globalOptions.base
-          : (globalThis.location?.href + '/' + (globalOptions.base ?? ''))
-        ) + (url ? '/' + url : '')).replace(/\/+/g, '/')
+      : (baseUrl.includes?.('://')
+          ? baseUrl
+          : globalThis.location?.href + '/' + baseUrl
+        ) + (url ? '/' + url : '')
+    ).replace(/\/+/g, '/')
   )
 
   for (let k in options.query || {}) {
@@ -29,7 +31,13 @@ const handleRequest = async (
   }
 
   if (payload) {
-    options.body = options.encode == false ? payload : (isString ? payload : JSON.stringify(payload))
+    options.body = options.encode != false
+                  ? (
+                      isString
+                      ? payload
+                      : JSON.stringify(payload)
+                    )
+                  : payload
     !isString && options.encode != false && headers.set('content-type', 'application/json')
   }
 
