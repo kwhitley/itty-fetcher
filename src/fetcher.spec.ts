@@ -72,7 +72,7 @@ const create500WithTextBodyResponse = (() =>
   }))) as any
 
 const createTextResponse = (spy: (request: Request) => any) => ((request: Request) => {
-  spy(request)
+  spy?.(request)
   return Promise.resolve(new Response(MOCK_TEXT))
 })
 
@@ -587,6 +587,13 @@ const tests: TestTree = {
         expect(response).toEqual(MOCK_OBJECT)
       },
     },
+    // 'text responses': {
+    //   'parses text by default (without requiring { parse: "text" })': async () => {
+    //     // @ts-ignore
+    //     const response = await fetcher({ fetch: createTextResponse() }).get('/')
+    //     expect(response).toEqual(MOCK_TEXT)
+    //   },
+    // },
   },
   'MISC BEHAVIOR': {
     'handles different argument patterns': {

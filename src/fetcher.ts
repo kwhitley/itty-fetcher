@@ -21,9 +21,8 @@ const handleRequest = async (
         ) + (url ? '/' + url : '')).replace(/\/+/g, '/')
   )
   let options = { ...globalOptions, ...args.shift(), method },
-  headers = new Headers(globalOptions.headers || {}),
-  parse = options.parse ?? 'json',
-  isString = typeof payload == 'string'
+  isString = typeof payload == 'string',
+  headers = new Headers(globalOptions.headers)
 
   for (let k in options.query || {}) {
     url.searchParams.append(k, options.query[k])
@@ -42,12 +41,12 @@ const handleRequest = async (
       error = !response.ok ? Object.assign(new Error(response.statusText), { status: response.status, response }) : undefined
 
   // parse response (if parse is not false)
-  if (parse) {
+  if (options.parse ?? 'json') {
     try {
-      response = response = await response[parse]()
+      response = response = await response[options.parse ?? 'json']()
 
       if (error) {
-        parse === 'json' ? (
+        options.parse ?? 'json' === 'json' ? (
           error = { ...error, ...response },
           error!.message = response.message ?? error!.message
         ) : (error!.message = response ?? error!.message)
