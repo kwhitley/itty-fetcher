@@ -30,15 +30,10 @@ const handleRequest = async (
     url.searchParams.append(k, options.query[k])
   }
 
-  if (payload) {
-    options.body = options.encode != false
-                  ? (
-                      isString
-                      ? payload
-                      : JSON.stringify(payload)
-                    )
-                  : payload
-    !isString && options.encode != false && headers.set('content-type', 'application/json')
+  options.body = payload
+  if (payload && options.encode != false) {
+    options.body = isString ? payload : JSON.stringify(payload)
+    !isString && headers.set('content-type', 'application/json')
   }
 
   for (let [k, v] of new Headers(options.headers || [])) {
