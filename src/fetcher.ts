@@ -30,22 +30,25 @@ const handleRequest = async (
     url.searchParams.append(k, options.query[k])
   }
 
+  // handle payload and content-type
   options.body = payload
   if (payload && options.encode != false) {
     options.body = isString ? payload : JSON.stringify(payload)
     !isString && headers.set('content-type', 'application/json')
   }
 
+  // add additional headers
   for (let [k, v] of new Headers(options.headers || [])) {
     headers.set(k, v)
   }
 
+  // make request
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
       error = response.ok
             ? undefined
             : Object.assign(new Error(response.statusText), { status: response.status, response })
 
-  // parse response (if parse is not false)
+  // parse response (if allowed)
   if (options.parse ?? 'json') {
     try {
       response = await response[options.parse ?? 'json']()
@@ -61,9 +64,7 @@ const handleRequest = async (
   // run after handlers
   for (let handler of options.after || []) {
     let result = await handler(response)
-    if (result != undefined) {
-      response = result
-    }
+    response = result ?? response
   }
 
   // return tuple if tuple is true
