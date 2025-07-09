@@ -138,6 +138,16 @@ const tests: TestTree = {
         expect(capturedMethod).toBe('POST')
         expect(response).toEqual(MOCK_OBJECT)
       },
+      'can make a POST request without url, payload, or options': async () => {
+        let capturedMethod = ''
+        const spy = mock((r: Request) => {
+          capturedMethod = r.method
+          return r.method
+        })
+        const response = await fetcher({ fetch: createMockFetch(spy) }).post()
+        expect(capturedMethod).toBe('POST')
+        expect(response).toEqual(MOCK_OBJECT)
+      },
       'serializes object payload': async () => {
         let capturedPayload = null
         const spy = mock(async (r: Request) => {
@@ -260,7 +270,7 @@ const tests: TestTree = {
         }).get('/cats')
         expect(capturedHeader).toBe('bar')
       },
-      'merges base headers with request headers': async () => {
+      'merges base headers with request headers': async ({ request }) => {
         let capturedHeaders: [string, string][] = []
         const spy = mock((r: Request) => {
           capturedHeaders = [...(r.headers as any).entries()]
@@ -658,7 +668,6 @@ const setup = () => {
 const runTests = (tests: TestTree) => {
   for (const [name, test] of Object.entries(tests)) {
     if (typeof test === 'function') {
-      if (test.constructor.name === 'AsyncFunction') {
         const request = {} as any
         it(name, async () => test({
           ...setup(),
@@ -673,10 +682,6 @@ const runTests = (tests: TestTree) => {
           },
           request,
         }))
-      } else {
-        // @ts-ignore
-        it(name, () => test({ ...setup() }))
-      }
     } else {
       describe(name, () => runTests(test))
     }

@@ -8,7 +8,7 @@ const handleRequest = async (
   method: string,
   globalOptions: FetcherOptionsObject,
   args: any[],
-  url = args.shift() ?? '',
+  url = typeof args[0] == 'string' ? args.shift() : '',
   payload = method != 'GET' ? args.shift() : null,
   options = { ...globalOptions, ...args.shift(), method },
   headers = new Headers(globalOptions.headers),
