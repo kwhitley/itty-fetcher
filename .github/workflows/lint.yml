@@ -1,4 +1,4 @@
-name: verify
+name: lint
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: oven-sh/setup-bun@v2.0.1
-      - name: Install dependencies
+      - name: install dependencies
         run: bun install
-      - name: Verify
-        run: bun run verify
+      - name: lint
+        run: bun run lint

@@ -1,4 +1,4 @@
-on: ['push', 'pull_request_target']
+on: [push, pull_request]
 
 name: Test Coveralls
 
@@ -7,17 +7,18 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
         with:
-          node-version: 18.x
+          fetch-depth: 0
 
-      - name: npm install, make test-coverage
+      - uses: oven-sh/setup-bun@v2.0.1
+
+      - name: Clean workspace and run tests
         run: |
-          yarn
-          yarn test
+          git clean -xfd       # Remove all untracked files, including stale tests
+          bun install
+          bun test --coverage
+
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
