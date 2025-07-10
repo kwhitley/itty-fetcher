@@ -2,11 +2,7 @@
 
 <p>
 <a href="https://itty.dev/itty-fetcher" target="_blank">
-  <img src="https://ity.sh/wW6oD6H8v" alt="itty-sockets" height="120" />
-</a>
-
-<a href="https://itty.dev/itty-sockets" target="_blank">
-  <img src="https://github.com/user-attachments/assets/651753c6-6a99-479b-8d5a-ac2aadc16e72" alt="itty-sockets" height="120" />
+  <img src="https://ity.sh/wW6oD6H8v" alt="itty-fetcher" height="120" />
 </a>
 </p>
 
