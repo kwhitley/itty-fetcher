@@ -1,23 +1,26 @@
 import terser from '@rollup/plugin-terser'
 import typescript from '@rollup/plugin-typescript'
-import fs from 'fs-extra'
-import { globby } from 'globby'
+import fs from 'node:fs'
+import path from 'node:path'
 import bundleSize from 'rollup-plugin-bundle-size'
-import copy from 'rollup-plugin-copy'
 
-// scan files to build
-const files = (await globby('./src/*.ts', {
-  ignore: ['**/*.spec.ts', '**/*.test.ts', '**/types.ts', '**/*.ignore.*.ts'],
-})).map(path => ({
-  path,
-  shortPath: path.replace(/(\/src)|(\.ts)/g, '').replace('./index', '.').replace('./fetcher', '.'),
-  esm: path.replace('/src/', '/dist/').replace('.ts', '.mjs'),
-  cjs: path.replace('/src/', '/dist/').replace('.ts', '.js'),
-  types: path.replace('/src/', '/dist/').replace('.ts', '.d.ts'),
-})).sort((a, b) => a.shortPath.toLowerCase() < b.shortPath.toLowerCase() ? -1 : 1)
+// scan files to build  
+const files = fs.readdirSync('./src')
+  .filter(file => file.endsWith('.ts') && !file.includes('.spec.') && !file.includes('.test.') && !file.includes('types.ts') && !file.includes('.ignore.'))
+  .map(file => {
+    const filePath = `./src/${file}`
+    return {
+      path: filePath,
+      shortPath: filePath.replace(/(\/src)|(\.ts)/g, '').replace('./index', '.').replace('./fetcher', '.'),
+      esm: filePath.replace('/src/', '/dist/').replace('.ts', '.mjs'),
+      cjs: filePath.replace('/src/', '/dist/').replace('.ts', '.js'),
+      types: filePath.replace('/src/', '/dist/').replace('.ts', '.d.ts'),
+    }
+  })
+  .sort((a, b) => a.shortPath.toLowerCase() < b.shortPath.toLowerCase() ? -1 : 1)
 
 // read original package.json
-const pkg = await fs.readJSON('./package.json')
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
 
 // create updated exports list from build files
 pkg.exports = files.reduce((acc, file) => {
@@ -31,7 +34,7 @@ pkg.exports = files.reduce((acc, file) => {
 }, {})
 
 // write updated package.json
-await fs.writeJSON('./package.json', pkg, { spaces: 2 })
+fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n')
 
 export default async () => {
   console.log(files.map(f => f.path))
@@ -51,17 +54,12 @@ export default async () => {
         },
       ],
       plugins: [
-        typescript(),
+        typescript({
+          outDir: 'dist',
+          rootDir: 'src',
+        }),
         terser(),
         bundleSize(),
-        copy({
-          targets: [
-            {
-              src: ['LICENSE'],
-              dest: 'dist',
-            },
-          ],
-        }),
       ],
     })),
     {
@@ -72,7 +70,10 @@ export default async () => {
         name: 'fetcher',
       },
       plugins: [
-        typescript(),
+        typescript({
+          outDir: 'dist',
+          rootDir: 'src',
+        }),
         terser(),
       ],
     },
