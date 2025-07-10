@@ -1,34 +1,91 @@
-export type ResponseHandler = (response?: Response, request?: Request) => Promise<Response | void>
+export type ResponseHandler = <ResponseShape>(response?: ResponseShape) => Promise<ResponseShape | void> | ResponseShape | void
 
 // Update FetcherOptions to be more specific about what it accepts
-export type FetcherOptionsObject = {
-  base?: string | URL
-  fetch?: typeof fetch
-  parse?: boolean
-  encode?: boolean
-  tuple?: boolean
-  as?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
+export type FetcherOptions = {
   after?: ResponseHandler[]
-} & RequestInit & Record<string, any>
+  array?: true
+  base?: string | URL
+  encode?: false
+  fetch?: typeof fetch
+  parse?: false | 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
+  query?: Record<string, any>
+} & RequestInit
 
-// Create a union type for all possible arguments
-export type FetcherOptions = string | FetcherOptionsObject
-
-export type GetFetchCall = {
-  (url?: string, options?: FetcherOptionsObject): Promise<any>
-  (options?: FetcherOptionsObject): Promise<any>
+// GET method overloads (no payload, only response)
+export type GetFetchCall<DefaultResponseShape = any> = {
+  <ResponseShape = DefaultResponseShape>(url?: string, options?: FetcherOptions): Promise<ResponseShape>
+  <ResponseShape = DefaultResponseShape>(options?: FetcherOptions): Promise<ResponseShape>
 }
 
-export type FetchCall = {
-  (url?: string, payload?: any, options?: FetcherOptionsObject): Promise<any>
-  (payload?: any, options?: FetcherOptionsObject): Promise<any>
+// POST/PUT/PATCH/DELETE method overloads (with payload) - REQUEST FIRST
+export type FetchCall<DefaultRequestShape = any, DefaultResponseShape = any> = {
+  // No generics = optional payload
+  (url?: string, payload?: any, options?: FetcherOptions): Promise<DefaultResponseShape>
+  (payload?: any, options?: FetcherOptions): Promise<DefaultResponseShape>
+
+  // Single generic = REQUEST type, payload REQUIRED
+  <RequestShape = DefaultRequestShape>(
+    url: string,
+    payload: RequestShape,
+    options?: FetcherOptions
+  ): Promise<DefaultResponseShape>
+
+  <RequestShape = DefaultRequestShape>(
+    payload: RequestShape,
+    options?: FetcherOptions
+  ): Promise<DefaultResponseShape>
+
+  // Both generics = REQUEST, RESPONSE - payload REQUIRED
+  <RequestShape = DefaultRequestShape, ResponseShape = DefaultResponseShape>(
+    url: string,
+    payload: RequestShape,
+    options?: FetcherOptions
+  ): Promise<ResponseShape>
+
+  <RequestShape = DefaultRequestShape, ResponseShape = DefaultResponseShape>(
+    payload: RequestShape,
+    options?: FetcherOptions
+  ): Promise<ResponseShape>
+
+  // Explicit undefined payload override
+  <RequestShape = DefaultRequestShape>(
+    url?: string,
+    payload?: undefined,
+    options?: FetcherOptions
+  ): Promise<DefaultResponseShape>
 }
 
-export type Fetcher = {
-  (options?: FetcherOptions, additionalOptions?: FetcherOptionsObject): Fetcher
-  get: GetFetchCall
-  post: FetchCall
-  put: FetchCall
-  patch: FetchCall
-  delete: FetchCall
+// Main Fetcher type with default generics - REQUEST FIRST
+export type Fetcher<DefaultRequestShape = any, DefaultResponseShape = any> = {
+  get: GetFetchCall<DefaultResponseShape>
+  post: FetchCall<DefaultRequestShape, DefaultResponseShape>
+  put: FetchCall<DefaultRequestShape, DefaultResponseShape>
+  patch: FetchCall<DefaultRequestShape, DefaultResponseShape>
+  delete: FetchCall<DefaultRequestShape, DefaultResponseShape>
 }
+
+// Factory function with proper generics - REQUEST FIRST
+export type FetcherFactory = {
+  <DefaultRequestShape = any, DefaultResponseShape = any>(
+    optionsOrBaseUrl?: string | FetcherOptions,
+    additionalOptions?: FetcherOptions
+  ): Fetcher<DefaultRequestShape, DefaultResponseShape>
+}
+
+// Usage examples:
+/*
+// Factory: Request, Response
+const api = fetcher<CreateUser, User>('https://api.com')
+
+// Single generic = request type (most common)
+api.post<CreateUser>('/users', userData)  // ✅ payload required
+
+// Both generics = request, response
+api.post<CreateUser, UserResponse>('/users', userData)  // ✅ payload required
+
+// No generics = optional payload
+api.post('/users', userData)  // ✅ works
+
+// This now errors as expected!
+api.post<CreateUser>('/users')  // ❌ payload required
+*/
