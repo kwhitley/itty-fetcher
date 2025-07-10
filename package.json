@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "bun test --watch --coverage",
-    "lint": "bun eslint src",
+    "lint": "biome lint src",
     "verify": "echo 'verifying module...' && bun run build && bun test",
     "prerelease": "bun run verify",
     "prerelease:next": "bun run verify",
@@ -43,12 +43,10 @@
     "url": "https://github.com/kwhitley/itty-fetcher/issues"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.1.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/bun": "^1.2.17",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
-    "eslint": "^9.17.0",
     "rollup": "^4.28.1",
     "rollup-plugin-bundle-size": "^1.0.3",
     "typescript": "^5.7.2",

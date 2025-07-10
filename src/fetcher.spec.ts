@@ -18,16 +18,16 @@ globalThis.location = {
   host: 'localhost',
   hostname: 'localhost',
   port: '',
-  protocol: 'https:'
+  protocol: 'https:',
 } as Location
 
 type TestLeaf = (args: {
-  fetcherInstance: Fetcher,
+  fetcherInstance: Fetcher
   // resolve: () => void,
   // getUrl: (r: Request) => string,
-  spy: () => void,
-  fetch?: typeof fetch,
-  request: Request,
+  spy: () => void
+  fetch?: typeof fetch
+  request: Request
   getFetcher: (options?: any) => Fetcher
 }) => void
 
@@ -44,37 +44,44 @@ const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete']
 const createMockFetch = (...spies: ((request: Request) => any)[]) => {
   return mock((request: Request) => {
     spies.forEach(spy => spy(request))
-    return Promise.resolve(new Response(STRINGIFIED_OBJECT, {
-      headers: { 'content-type': 'application/json' }
-    }))
+    return Promise.resolve(
+      new Response(STRINGIFIED_OBJECT, {
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
   }) as any
 }
 
-const create404Response = (() =>
-  Promise.resolve(new Response(null, { status: 404 }))) as any
+const create404Response = (() => Promise.resolve(new Response(null, { status: 404 }))) as any
 
 const create404WithBodyResponse = (() =>
-  Promise.resolve(new Response(JSON.stringify({ status: 404, error: 'Not found' }), {
-    headers: { 'content-type': 'application/json' },
-    status: 404,
-  }))) as any
+  Promise.resolve(
+    new Response(JSON.stringify({ status: 404, error: 'Not found' }), {
+      headers: { 'content-type': 'application/json' },
+      status: 404,
+    }),
+  )) as any
 
 const create400WithJsonBodyResponse = (() =>
-  Promise.resolve(new Response(JSON.stringify({ error: 'Invalid request parameters' }), {
-    headers: { 'content-type': 'application/json' },
-    status: 400,
-  }))) as any
+  Promise.resolve(
+    new Response(JSON.stringify({ error: 'Invalid request parameters' }), {
+      headers: { 'content-type': 'application/json' },
+      status: 400,
+    }),
+  )) as any
 
 const create500WithTextBodyResponse = (() =>
-  Promise.resolve(new Response('Internal server error occurred', {
-    headers: { 'content-type': 'text/plain' },
-    status: 500,
-  }))) as any
+  Promise.resolve(
+    new Response('Internal server error occurred', {
+      headers: { 'content-type': 'text/plain' },
+      status: 500,
+    }),
+  )) as any
 
-const createTextResponse = (spy: (request: Request) => any) => ((request: Request) => {
+const createTextResponse = (spy: (request: Request) => any) => (request: Request) => {
   spy?.(request)
   return Promise.resolve(new Response(MOCK_TEXT))
-})
+}
 
 const tests: TestTree = {
   'NAMED EXPORTS': {
@@ -98,15 +105,18 @@ const tests: TestTree = {
       const instance = fetcher({ base: 'https://api.example.com' })
       expect(typeof instance).toBe('function')
     },
-    'exposes chainable methods': HTTP_METHODS.reduce((acc, method) => {
-      acc[`.${method}()`] = ({ fetcherInstance }) => {
-        expect(typeof fetcherInstance[method]).toBe('function')
-      }
-      return acc
-    }, {} as Record<string, TestLeaf>),
+    'exposes chainable methods': HTTP_METHODS.reduce(
+      (acc, method) => {
+        acc[`.${method}()`] = ({ fetcherInstance }) => {
+          expect(typeof fetcherInstance[method]).toBe('function')
+        }
+        return acc
+      },
+      {} as Record<string, TestLeaf>,
+    ),
   },
   'HTTP METHODS': {
-    'GET': {
+    GET: {
       'makes GET request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
@@ -127,7 +137,7 @@ const tests: TestTree = {
         expect(capturedUrl).toBe('https://foo.bar/')
       },
     },
-    'POST': {
+    POST: {
       'makes POST request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
@@ -154,7 +164,10 @@ const tests: TestTree = {
           capturedPayload = await r.json()
           return capturedPayload
         })
-        await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).post('/', MOCK_OBJECT)
+        await fetcher({ base: 'https://foo.bar', fetch: createMockFetch(spy) }).post(
+          '/',
+          MOCK_OBJECT,
+        )
         // @ts-ignore
         expect(capturedPayload).toEqual(MOCK_OBJECT)
       },
@@ -168,7 +181,7 @@ const tests: TestTree = {
         expect(capturedContentType).toBe('application/json')
       },
     },
-    'PUT': {
+    PUT: {
       'makes PUT request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
@@ -179,7 +192,7 @@ const tests: TestTree = {
         expect(capturedMethod).toBe('PUT')
       },
     },
-    'PATCH': {
+    PATCH: {
       'makes PATCH request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
@@ -190,7 +203,7 @@ const tests: TestTree = {
         expect(capturedMethod).toBe('PATCH')
       },
     },
-    'DELETE': {
+    DELETE: {
       'makes DELETE request': async () => {
         let capturedMethod = ''
         const spy = mock((r: Request) => {
@@ -202,9 +215,9 @@ const tests: TestTree = {
       },
     },
   },
-  'OPTIONS': {
+  OPTIONS: {
     '{ base: string }': {
-        'prepends base URL to requests': async () => {
+      'prepends base URL to requests': async () => {
         let capturedUrl = ''
         const spy = mock((r: Request) => {
           capturedUrl = r.url
@@ -227,7 +240,7 @@ const tests: TestTree = {
       'returns raw Response object': async () => {
         const response = await fetcher({
           fetch: createMockFetch(),
-          parse: false
+          parse: false,
         }).get('/')
         expect(response).toBeInstanceOf(Response)
       },
@@ -252,7 +265,11 @@ const tests: TestTree = {
       'parses responses as arrayBuffer': async () => {
         const spy = mock(() => {})
         // @ts-ignore
-        const response = await fetcher({ fetch: createTextResponse(spy), parse: 'arrayBuffer' }).get('/')
+        const response = await fetcher({
+          // @ts-ignore
+          fetch: createTextResponse(spy),
+          parse: 'arrayBuffer',
+        }).get('/')
         expect(response).toBeInstanceOf(ArrayBuffer)
       },
     },
@@ -266,11 +283,11 @@ const tests: TestTree = {
         await fetcher({
           base: 'https://foo.bar',
           fetch: createMockFetch(spy),
-          headers: { foo: 'bar' }
+          headers: { foo: 'bar' },
         }).get('/cats')
         expect(capturedHeader).toBe('bar')
       },
-      'merges base headers with request headers': async ({ request }) => {
+      'merges base headers with request headers': async () => {
         let capturedHeaders: [string, string][] = []
         const spy = mock((r: Request) => {
           capturedHeaders = [...(r.headers as any).entries()]
@@ -281,7 +298,7 @@ const tests: TestTree = {
           fetch: createMockFetch(spy),
           headers: { foo: 'bar', cat: 'dog' },
         }).get('/cats', {
-          headers: { foo: 'baz' }
+          headers: { foo: 'baz' },
         })
         expect(capturedHeaders).toEqual([
           ['cat', 'dog'],
@@ -331,7 +348,7 @@ const tests: TestTree = {
         const payload = 'raw string'
         await fetcher({
           fetch: createMockFetch(spy),
-          encode: false
+          encode: false,
         }).post('/', payload)
         expect(capturedText).toBe(payload)
       },
@@ -342,8 +359,8 @@ const tests: TestTree = {
           fetch: createMockFetch(),
           after: [
             // @ts-ignore
-            async (data) => ({ ...data, transformed: true })
-          ]
+            async data => ({ ...data, transformed: true }),
+          ],
         }).get('/')
         expect(response.transformed).toBe(true)
       },
@@ -352,12 +369,12 @@ const tests: TestTree = {
         const response = await fetcher({
           fetch: createMockFetch(),
           after: [
-            async (data) => {
+            async _data => {
               sideEffectTriggered = true
               // Explicitly return undefined (like console.log)
               return undefined
-            }
-          ]
+            },
+          ],
         }).get('/')
         expect(sideEffectTriggered).toBe(true)
         expect(response).toEqual(MOCK_OBJECT) // Original response unchanged
@@ -369,19 +386,19 @@ const tests: TestTree = {
           fetch: createMockFetch(),
           after: [
             // @ts-ignore
-            async (data) => {
+            async data => {
               handler1Called = true
               return { ...data, step1: true }
             },
-            async (data) => {
+            async () => {
               handler2Called = true
               // Return undefined - should not transform
             },
             // @ts-ignore
-            async (data) => {
+            async data => {
               return { ...data, step3: true }
-            }
-          ]
+            },
+          ],
         }).get('/')
         expect(handler1Called).toBe(true)
         expect(handler2Called).toBe(true)
@@ -396,7 +413,7 @@ const tests: TestTree = {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: createMockFetch(),
-            array: true
+            array: true,
           }).get('/')
 
           expect(response).toEqual(MOCK_OBJECT)
@@ -408,7 +425,7 @@ const tests: TestTree = {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create404Response,
-            array: true
+            array: true,
           }).get('/missing')
 
           expect(response).toBe(undefined) // Empty text response when parsed
@@ -422,7 +439,7 @@ const tests: TestTree = {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create404WithBodyResponse,
-            array: true
+            array: true,
           }).get('/missing')
 
           expect(response).toBe(undefined)
@@ -435,7 +452,7 @@ const tests: TestTree = {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create400WithJsonBodyResponse,
-            array: true
+            array: true,
           }).get('/invalid')
 
           expect(response).toBe(undefined)
@@ -448,7 +465,7 @@ const tests: TestTree = {
           // @ts-ignore
           const [error, response] = await fetcher({
             fetch: create500WithTextBodyResponse,
-            array: true
+            array: true,
           }).get('/server-error')
 
           expect(response).toBe(undefined)
@@ -464,7 +481,7 @@ const tests: TestTree = {
           const [error, response] = await fetcher({
             fetch: createMockFetch(),
             array: true,
-            parse: false
+            parse: false,
           }).get('/')
 
           expect(response).toBeInstanceOf(Response)
@@ -475,7 +492,7 @@ const tests: TestTree = {
           const [error, response] = await fetcher({
             fetch: create404WithBodyResponse,
             array: true,
-            parse: false
+            parse: false,
           }).get('/missing')
 
           expect(response).toBeUndefined()
@@ -493,8 +510,8 @@ const tests: TestTree = {
             array: true,
             after: [
               // @ts-ignore
-              async (data) => ({ ...data, transformed: true })
-            ]
+              async data => ({ ...data, transformed: true }),
+            ],
           }).get('/')
 
           expect(response.transformed).toBe(true)
@@ -509,8 +526,10 @@ const tests: TestTree = {
             array: true,
             after: [
               // @ts-ignore
-              async (data) => { processed = true }
-            ]
+              async _data => {
+                processed = true
+              },
+            ],
           }).get('/missing')
 
           expect(response).toBe(undefined)
@@ -569,9 +588,9 @@ const tests: TestTree = {
       'can catch and handle errors': async () => {
         // @ts-ignore
         let error: any = null
-        const result = await fetcher({ fetch: create404Response })
+        const _result = await fetcher({ fetch: create404Response })
           .get('/missing')
-          .catch((err) => error = err)
+          .catch(err => (error = err))
 
         // expect(result).toBeUndefined()
         expect(error?.status).toBe(404)
@@ -580,9 +599,9 @@ const tests: TestTree = {
       'can catch and handle errors with JSON body': async () => {
         // @ts-ignore
         let error: any = null
-        const result = await fetcher({ fetch: create404WithBodyResponse })
+        const _result = await fetcher({ fetch: create404WithBodyResponse })
           .get('/missing')
-          .catch((err) => error = err)
+          .catch(err => (error = err))
 
         expect(error?.status).toBe(404)
         expect(error?.error).toBe('Not found')
@@ -591,9 +610,9 @@ const tests: TestTree = {
       'can catch and handle errors without JSON body': async () => {
         // @ts-ignore
         let error: any = null
-        const result = await fetcher({ fetch: create404Response })
+        const _result = await fetcher({ fetch: create404Response })
           .get('/missing')
-          .catch((err) => error = err)
+          .catch(err => (error = err))
 
         expect(error?.status).toBe(404)
         expect(error?.response).toBeInstanceOf(Response)
@@ -649,7 +668,6 @@ const tests: TestTree = {
       await fetcher(ABSOLUTE_ORIGIN_NOSLASH, { fetch }).get('/dogs')
       expect(request.url).toBe(`${ABSOLUTE_ORIGIN_NOSLASH}/dogs`)
     },
-
   },
 }
 
@@ -668,20 +686,24 @@ const setup = () => {
 const runTests = (tests: TestTree) => {
   for (const [name, test] of Object.entries(tests)) {
     if (typeof test === 'function') {
-        const request = {} as any
-        it(name, async () => test({
+      const request = {} as any
+      it(name, async () =>
+        test({
           ...setup(),
           // @ts-ignore
           fetch: (r: Request) => {
             request.url = r.url
             request.method = r.method
 
-            return Promise.resolve(new Response(STRINGIFIED_OBJECT, {
-              headers: { 'content-type': 'application/json' }
-            }))
+            return Promise.resolve(
+              new Response(STRINGIFIED_OBJECT, {
+                headers: { 'content-type': 'application/json' },
+              }),
+            )
           },
           request,
-        }))
+        }),
+      )
     } else {
       describe(name, () => runTests(test))
     }
