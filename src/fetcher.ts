@@ -1,8 +1,4 @@
-import type {
-  FetcherOptions,
-  Fetcher,
-  FetcherFactory,
-} from './types'
+import type { Fetcher, FetcherFactory, FetcherOptions } from './types'
 
 const handleRequest = async (
   method: string,
@@ -19,11 +15,9 @@ const handleRequest = async (
   url = new URL(
     (url.includes('://')
       ? url
-      : (baseUrl.includes?.('://')
-          ? baseUrl
-          : globalThis.location?.href + '/' + baseUrl
-        ) + (url ? '/' + url : '')
-    ).replace(/\/+/g, '/')
+      : (baseUrl.includes?.('://') ? baseUrl : globalThis.location?.href + '/' + baseUrl) +
+        (url ? '/' + url : '')
+    ).replace(/\/+/g, '/'),
   )
 
   for (let k in options.query || {}) {
@@ -44,9 +38,9 @@ const handleRequest = async (
 
   // make request
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
-      error = response.ok
-            ? undefined
-            : Object.assign(new Error(response.statusText), { status: response.status, response })
+    error = response.ok
+      ? undefined
+      : Object.assign(new Error(response.statusText), { status: response.status, response })
 
   // parse response (if allowed)
   if (options.parse ?? 'json') {
@@ -57,7 +51,11 @@ const handleRequest = async (
         error = { ...error, ...response }
       }
     } catch (parseError: any) {
-      !error && (error = Object.assign(new Error(parseError.message), { status: response.status, response }))
+      !error &&
+        (error = Object.assign(new Error(parseError.message), {
+          status: response.status,
+          response,
+        }))
     }
   }
 
@@ -77,21 +75,17 @@ const handleRequest = async (
   return response
 }
 
-export const fetcher: FetcherFactory = (
-  optionsOrBase,
-  additionalOptions,
-): Fetcher => {
-  let baseOptions = typeof optionsOrBase == 'string'
-    ? { base: optionsOrBase, ...additionalOptions }
-    : optionsOrBase || {}
+export const fetcher: FetcherFactory = (optionsOrBase, additionalOptions): Fetcher => {
+  let baseOptions =
+    typeof optionsOrBase == 'string'
+      ? { base: optionsOrBase, ...additionalOptions }
+      : optionsOrBase || {}
 
   return new Proxy(() => {}, {
-    get: (target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') => (...args: any) =>
-      handleRequest(
-        prop.toUpperCase(),
-        baseOptions,
-        args,
-      )
+    get:
+      (_target, prop: 'get' | 'post' | 'put' | 'patch' | 'delete') =>
+      (...args: any) =>
+        handleRequest(prop.toUpperCase(), baseOptions, args),
   }) as any
 }
 

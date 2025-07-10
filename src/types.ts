@@ -1,4 +1,6 @@
-export type ResponseHandler = <ResponseShape>(response?: ResponseShape) => Promise<ResponseShape | void> | ResponseShape | void
+export type ResponseHandler = <ResponseShape>(
+  response?: ResponseShape,
+) => Promise<ResponseShape | void> | ResponseShape | void
 
 // Update FetcherOptions to be more specific about what it accepts
 export type FetcherOptions = {
@@ -13,46 +15,53 @@ export type FetcherOptions = {
 
 // GET method overloads (no payload, only response)
 export type GetFetchCall<DefaultResponseShape = any> = {
-  <ResponseShape = DefaultResponseShape>(url?: string, options?: FetcherOptions): Promise<ResponseShape>
+  <ResponseShape = DefaultResponseShape>(
+    url?: string,
+    options?: FetcherOptions,
+  ): Promise<ResponseShape>
   <ResponseShape = DefaultResponseShape>(options?: FetcherOptions): Promise<ResponseShape>
 }
 
 // POST/PUT/PATCH/DELETE method overloads (with payload) - REQUEST FIRST
 export type FetchCall<DefaultRequestShape = any, DefaultResponseShape = any> = {
   // No generics = optional payload
-  (url?: string, payload?: any, options?: FetcherOptions): Promise<DefaultResponseShape>
+  (
+    url?: string,
+    payload?: undefined | DefaultRequestShape,
+    options?: FetcherOptions,
+  ): Promise<DefaultResponseShape>
   (payload?: any, options?: FetcherOptions): Promise<DefaultResponseShape>
 
   // Single generic = REQUEST type, payload REQUIRED
   <RequestShape = DefaultRequestShape>(
     url: string,
     payload: RequestShape,
-    options?: FetcherOptions
+    options?: FetcherOptions,
   ): Promise<DefaultResponseShape>
 
   <RequestShape = DefaultRequestShape>(
     payload: RequestShape,
-    options?: FetcherOptions
+    options?: FetcherOptions,
   ): Promise<DefaultResponseShape>
 
   // Both generics = REQUEST, RESPONSE - payload REQUIRED
   <RequestShape = DefaultRequestShape, ResponseShape = DefaultResponseShape>(
     url: string,
     payload: RequestShape,
-    options?: FetcherOptions
+    options?: FetcherOptions,
   ): Promise<ResponseShape>
 
   <RequestShape = DefaultRequestShape, ResponseShape = DefaultResponseShape>(
     payload: RequestShape,
-    options?: FetcherOptions
+    options?: FetcherOptions,
   ): Promise<ResponseShape>
 
   // Explicit undefined payload override
-  <RequestShape = DefaultRequestShape>(
+  <_RequestShape = DefaultRequestShape, ResponseShape = DefaultResponseShape>(
     url?: string,
     payload?: undefined,
-    options?: FetcherOptions
-  ): Promise<DefaultResponseShape>
+    options?: FetcherOptions,
+  ): Promise<ResponseShape>
 }
 
 // Main Fetcher type with default generics - REQUEST FIRST
@@ -65,12 +74,10 @@ export type Fetcher<DefaultRequestShape = any, DefaultResponseShape = any> = {
 }
 
 // Factory function with proper generics - REQUEST FIRST
-export type FetcherFactory = {
-  <DefaultRequestShape = any, DefaultResponseShape = any>(
-    optionsOrBaseUrl?: string | FetcherOptions,
-    additionalOptions?: FetcherOptions
-  ): Fetcher<DefaultRequestShape, DefaultResponseShape>
-}
+export type FetcherFactory = <DefaultRequestShape = any, DefaultResponseShape = any>(
+  optionsOrBaseUrl?: string | FetcherOptions,
+  additionalOptions?: FetcherOptions,
+) => Fetcher<DefaultRequestShape, DefaultResponseShape>
 
 // Usage examples:
 /*
