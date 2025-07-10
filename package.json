@@ -19,8 +19,8 @@
     "verify": "echo 'verifying module...' && bun run build && bun test",
     "prerelease": "bun run verify",
     "prerelease:next": "bun run verify",
-    "prebuild": "rimraf dist && mkdir dist",
-    "build": "rollup -c && bun readme-inject.mjs",
+    "prebuild": "rm -rf dist && mkdir dist",
+    "build": "rollup -c && cp LICENSE dist/ && bun readme-inject.mjs",
     "release": "release --tag --push --patch --src=dist",
     "release:next": "release --tag --push --type=next --src=dist"
   },
@@ -47,11 +47,8 @@
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.17.0",
-    "globby": "^14.1.0",
-    "rimraf": "^6.0.1",
     "rollup": "^4.28.1",
     "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.7.2",
     "yarn-release": "^1.10.6"
   }
