@@ -17,6 +17,7 @@ jobs:
         run: |
           git clean -xfd       # Remove all untracked files, including stale tests
           bun install
+          mkdir -p coverage
           bun test --coverage
 
       - name: Coveralls
