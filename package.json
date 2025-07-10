@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "dev": "bun test --watch",
+    "dev": "bun test --watch --coverage",
     "lint": "bun eslint src",
     "verify": "echo 'verifying module...' && bun run build && bun test",
     "prerelease": "bun run verify",
