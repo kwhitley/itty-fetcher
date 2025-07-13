@@ -29,28 +29,30 @@ itty-fetcher is a lightweight wrapper around the native `fetch` API that elimina
 - **100% TypeScript** - Intelligent type inference with generics for request/response shapes
 - **Universal** - Works everywhere fetch is supported... or not (through polyfills)
 
+<br />
+
 ...and of course [itty](https://itty.dev), at under 650 bytes. We got you, fam.
 
+<br />
 
-## Comparison
-
-**Before (native fetch):**
+## Allows this:
 ```ts
-const response = await fetch('/api/users', {
+const newUser = await fetcher().post('/api/users', { name: 'Alice' })
+```
+
+## Instead of this:
+```ts
+const newUser = await fetch('/api/users', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ name: 'Alice' })
+}).then(response => {
+  if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`)
+
+  return response.json()
 })
-
-if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`)
-
-const user = await response.json()
 ```
 
-**After (itty-fetcher):**
-```ts
-const user = await fetcher().post('/api/users', { name: 'Alice' })
-```
 
 <br />
 
@@ -76,17 +78,22 @@ _Note: This will lose TypeScript support, but is great for adding to your browse
 ```ts
 import { fetcher } from 'itty-fetcher'
 
-// make simple requests
-const users = await fetcher().get('https://ittysockets.io/stats')
-await fetcher().post('/api/users', { name: 'Alice' })
+// simple one line fetch
+fetcher().get('https://example.com/api/items').then(console.log)
 
-// ...or create a reusable API client
-const api = fetcher('https://api.example.com', {
-  headers: { 'x-powered-by': 'itty.dev' }
+// ========================================================
+
+// or make reusable api endpoints
+const api = fetcher('https://example.com', {
+  headers: { 'x-api-key': 'my-secret-key' },
+  after: [console.log],
 })
 
-// then use it
-const newUser = await api.post('/users', { name: 'Katiya' })
+// to make api calls even sexier
+const items = await api.get('/items')
+
+// no need to encode/decode for JSON payloads
+api.post('/items', { foo: 'bar' })
 ```
 
 <br />
