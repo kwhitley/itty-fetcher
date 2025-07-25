@@ -57,7 +57,7 @@ export type FetchCall<DefaultRequestShape = any, DefaultResponseShape = any> = {
   ): Promise<ResponseShape>
 
   // Explicit undefined payload override
-  <_RequestShape = DefaultRequestShape, ResponseShape = DefaultResponseShape>(
+  <ResponseShape = DefaultResponseShape>(
     url?: string,
     payload?: undefined,
     options?: FetcherOptions,

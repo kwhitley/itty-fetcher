@@ -1,6 +1,6 @@
 import type { Fetcher, FetcherFactory, FetcherOptions } from './types'
 
-const handleRequest = async (
+let handleRequest = async (
   method: string,
   globalOptions: FetcherOptions,
   args: any[],
@@ -28,7 +28,7 @@ const handleRequest = async (
   options.body = payload
   if (payload && options.encode != false) {
     options.body = isString ? payload : JSON.stringify(payload)
-    !isString && headers.set('content-type', 'application/json')
+    if (!isString) headers.set('content-type', 'application/json')
   }
 
   // add additional headers
@@ -51,11 +51,12 @@ const handleRequest = async (
         error = { ...error, ...response }
       }
     } catch (parseError: any) {
-      !error &&
-        (error = Object.assign(new Error(parseError.message), {
+      if (!error) {
+        error = Object.assign(new Error(parseError.message), {
           status: response.status,
           response,
-        }))
+        })
+      }
     }
   }
 
@@ -75,7 +76,7 @@ const handleRequest = async (
   return response
 }
 
-export const fetcher: FetcherFactory = (optionsOrBase, additionalOptions): Fetcher => {
+export let fetcher: FetcherFactory = (optionsOrBase, additionalOptions): Fetcher => {
   let baseOptions =
     typeof optionsOrBase == 'string'
       ? { base: optionsOrBase, ...additionalOptions }

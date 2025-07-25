@@ -21,6 +21,6 @@
     "module": "esnext",
     "types": ["@types/node", "bun"]
   },
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/types.ts", "examples"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/types.ts"],
   "include": ["src"]
 }
