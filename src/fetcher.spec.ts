@@ -78,6 +78,14 @@ const create500WithTextBodyResponse = (() =>
     }),
   )) as any
 
+const createInvalidJsonResponse = (() =>
+  Promise.resolve(
+    new Response('{ invalid json syntax', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }),
+  )) as any
+
 const createTextResponse = (spy: (request: Request) => any) => (request: Request) => {
   spy?.(request)
   return Promise.resolve(new Response(MOCK_TEXT))
@@ -369,7 +377,7 @@ const tests: TestTree = {
         const response = await fetcher({
           fetch: createMockFetch(),
           after: [
-            async _data => {
+            async () => {
               sideEffectTriggered = true
               // Explicitly return undefined (like console.log)
               return undefined
@@ -526,7 +534,7 @@ const tests: TestTree = {
             array: true,
             after: [
               // @ts-ignore
-              async _data => {
+              async () => {
                 processed = true
               },
             ],
@@ -588,7 +596,7 @@ const tests: TestTree = {
       'can catch and handle errors': async () => {
         // @ts-ignore
         let error: any = null
-        const _result = await fetcher({ fetch: create404Response })
+        await fetcher({ fetch: create404Response })
           .get('/missing')
           .catch(err => (error = err))
 
@@ -599,7 +607,7 @@ const tests: TestTree = {
       'can catch and handle errors with JSON body': async () => {
         // @ts-ignore
         let error: any = null
-        const _result = await fetcher({ fetch: create404WithBodyResponse })
+        await fetcher({ fetch: create404WithBodyResponse })
           .get('/missing')
           .catch(err => (error = err))
 
@@ -610,12 +618,23 @@ const tests: TestTree = {
       'can catch and handle errors without JSON body': async () => {
         // @ts-ignore
         let error: any = null
-        const _result = await fetcher({ fetch: create404Response })
+        await fetcher({ fetch: create404Response })
           .get('/missing')
           .catch(err => (error = err))
 
         expect(error?.status).toBe(404)
         expect(error?.response).toBeInstanceOf(Response)
+      },
+      'handles JSON parse errors on successful responses': async () => {
+        // @ts-ignore
+        let error: any = null
+        await fetcher({ fetch: createInvalidJsonResponse })
+          .get('/invalid-json')
+          .catch(err => (error = err))
+
+        expect(error?.status).toBe(200)
+        expect(error?.response).toBeInstanceOf(Response)
+        expect(error?.message).toContain('JSON')
       },
     },
   },

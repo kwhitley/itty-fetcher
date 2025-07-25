@@ -2,35 +2,32 @@
   "name": "itty-fetcher",
   "version": "1.0.3",
   "type": "module",
-  "description": "An ultra-tiny native fetch wrapper to clean up your API calls.",
+  "description": "An tiny wrapper to make native Fetch even simpler and more powerful.",
   "main": "./fetcher.js",
   "module": "./fetcher.mjs",
   "types": "./fetcher.d.ts",
   "exports": {
     ".": {
-      "import": "./fetcher.mjs",
-      "require": "./fetcher.js",
-      "types": "./fetcher.d.ts"
+      "import": "./dist/fetcher.mjs",
+      "types": "./dist/fetcher.d.ts",
+      "require": "./dist/fetcher.cjs"
     }
   },
   "scripts": {
     "dev": "bun test --watch --coverage",
-    "lint": "biome lint src",
+    "lint": "itty lint",
     "verify": "echo 'verifying module...' && bun run build && bun test",
     "prerelease": "bun run verify",
-    "prerelease:next": "bun run verify",
-    "prebuild": "rm -rf dist && mkdir dist",
-    "build": "rollup -c && cp LICENSE dist/ && bun readme-inject.mjs",
-    "release": "release --tag --push --patch --src=dist",
-    "release:next": "release --tag --push --type=next --src=dist"
+    "build": "itty lint && itty build --snippet=fetcher --hybrid",
+    "release": "itty publish --tag --push --patch --src=dist",
+    "release:next": "itty publish --tag --push --type=next --src=dist"
   },
   "keywords": [
     "fetch",
-    "fetcher",
     "api",
-    "simple",
-    "axios",
+    "composable",
     "tiny",
+    "simple",
     "json"
   ],
   "repository": {
@@ -43,13 +40,7 @@
     "url": "https://github.com/kwhitley/itty-fetcher/issues"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.1.1",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@types/bun": "^1.2.17",
-    "rollup": "^4.28.1",
-    "rollup-plugin-bundle-size": "^1.0.3",
-    "typescript": "^5.7.2",
-    "yarn-release": "^1.10.6"
+    "itty-packager": "^1.0.7"
   }
 }
