@@ -17,27 +17,13 @@
 ### [Documentation](https://itty.dev/itty-fetcher) &nbsp;| &nbsp; [Discord](https://discord.gg/53vyrZAu9u)
 
 ---
-itty-fetcher is a lightweight wrapper around the native `fetch` API that eliminates the common boilerplate when making API calls.
 
-## ✨ Key Features
+# Fetch, without the boilerplate (and Typed).
+Fetcher is an ultra-compact (~650 bytes) wrapper around native `Fetch`, designed purely to avoid boilerplate steps and shrink downstream code.
 
-- **Automatic** - JSON parsing, payload serialization, HTTP error throwing, etc.
-- **Composable** - Set up your API/endpoint once, then call it cleanly
-- **Human-Readable** - Method calls that feel natural
-  - `fetcher().get('/users')`
-  - `users.post({ name: 'Steve', age: 24 })`
-- **100% TypeScript** - Intelligent type inference with generics for request/response shapes
-- **Universal** - Works everywhere fetch is supported... or not (through polyfills)
-
-<br />
-
-...and of course [itty](https://itty.dev), at under 650 bytes. We got you, fam.
-
-<br />
-
-## Allows this:
+## Fetcher allows this:
 ```ts
-const newUser = await fetcher().post('/api/users', { name: 'Alice' })
+const newUser = await fetcher().post<NewUser, User>('/api/users', { name: 'Alice' })
 ```
 
 ## Instead of this:
@@ -73,20 +59,21 @@ _Note: This will lose TypeScript support, but is great for adding to your browse
 
 <br />
 
-# Basic Usage
+# Examples
 
+### A one-line fetch
 ```ts
-import { fetcher } from 'itty-fetcher'
+const items = await fetcher().get('https://example.com/api/items')
 
-// simple one line fetch
-fetcher().get('https://example.com/api/items').then(console.log)
+// or typed...
+const items = await fetcher<MyCustomType[]>().get('https://example.com/api/items')
+```
 
-// ========================================================
-
-// or make reusable api endpoints
-const api = fetcher('https://example.com', {
-  headers: { 'x-api-key': 'my-secret-key' },
-  after: [console.log],
+### A reusable API endpoint
+```ts
+const api = fetcher('https://example.com', {  // set a base url
+  headers: { 'x-api-key': 'my-secret-key' },  // add a header to all requests
+  after: [console.log],                       // and some response handlers/transforms
 })
 
 // to make api calls even sexier
@@ -103,17 +90,16 @@ api.post('/items', { foo: 'bar' })
 Like any [itty.dev](https://itty.dev) project, this is not a kitchen-sink library. If you need advanced features like automatic retries or complex request interception, consider a more full-featured library. This is for when you want native fetch behavior with dramatically less boilerplate.
 
 **✅ Perfect for:**
-- Removing boilerplate from fetch calls
-- Projects using native fetch today
+- Simplifying data fetching/sending
 - Composable API clients
-- Simple use-cases where size matters
+- Saving bundle size (this pays for itself within a few calls)
 
 **❌ Consider alternatives for:**
 - Automatic retries or timeout handling
 - GraphQL (use a GraphQL client)
-- Complex request/response middleware
-- Very advanced edge-cases
-
+- VanillaJS purists (we applaud your unwavering resolve)
+- Streams?
+  
 <br />
 
 # Next Steps
