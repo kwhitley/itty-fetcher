@@ -8,9 +8,9 @@
   "types": "./fetcher.d.ts",
   "exports": {
     ".": {
-      "import": "./fetcher.mjs",
-      "types": "./fetcher.d.ts",
-      "require": "./fetcher.cjs"
+      "import": "./dist/fetcher.mjs",
+      "types": "./dist/fetcher.d.ts",
+      "require": "./dist/fetcher.cjs"
     }
   },
   "scripts": {
@@ -41,6 +41,6 @@
   },
   "devDependencies": {
     "@types/bun": "^1.2.17",
-    "itty-packager": "^1.0.9"
+    "itty-packager": "^1.0.10"
   }
 }
