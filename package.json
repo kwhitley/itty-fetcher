@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "description": "An tiny wrapper to make native Fetch even simpler and more powerful.",
   "main": "./fetcher.js",
