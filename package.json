@@ -19,8 +19,8 @@
     "verify": "echo 'verifying module...' && bun run build && bun test",
     "prerelease": "bun run verify",
     "build": "itty lint && itty build --snippet=fetcher --hybrid",
-    "release": "itty publish --tag --push --patch --src=dist",
-    "release:next": "itty publish --tag --push --type=next --src=dist"
+    "release": "itty publish --tag --push --patch",
+    "release:next": "itty publish --tag --push --type=next"
   },
   "keywords": [
     "fetch",
