@@ -46,7 +46,7 @@ const newUser = await fetch('/api/users', {
 
 ### Option 1: Import
 ```ts
-import { fetcher } from 'itty-fetcher'
+import { fetcher } from 'itty-fetcher' // ~650 bytes
 ```
 
 ### Option 2: Just copy this snippet:
