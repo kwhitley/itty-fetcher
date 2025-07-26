@@ -1,8 +1,8 @@
 {
   "name": "itty-fetcher",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "type": "module",
-  "description": "An tiny wrapper to make native Fetch even simpler and more powerful.",
+  "description": "Fetch, without the boilerplate (and Typed).",
   "main": "./fetcher.js",
   "module": "./fetcher.mjs",
   "types": "./fetcher.d.ts",
