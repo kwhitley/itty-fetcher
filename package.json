@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "description": "Fetch, without the boilerplate (and Typed).",
   "main": "./fetcher.js",
