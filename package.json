@@ -1,6 +1,6 @@
 {
   "name": "itty-fetcher",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "An tiny wrapper to make native Fetch even simpler and more powerful.",
   "main": "./fetcher.js",
@@ -8,19 +8,18 @@
   "types": "./fetcher.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/fetcher.mjs",
-      "types": "./dist/fetcher.d.ts",
-      "require": "./dist/fetcher.cjs"
+      "import": "./fetcher.mjs",
+      "types": "./fetcher.d.ts",
+      "require": "./fetcher.cjs"
     }
   },
   "scripts": {
     "dev": "bun test --watch --coverage",
+    "test": "bun test --coverage",
     "lint": "itty lint",
-    "verify": "echo 'verifying module...' && bun run build && bun test",
-    "prerelease": "bun run verify",
     "build": "itty lint && itty build --snippet=fetcher --hybrid",
-    "release": "itty publish --tag --push --patch",
-    "release:next": "itty publish --tag --push --type=next"
+    "release": "itty release --prepare --tag --push",
+    "release:next": "itty release --prepare --tag --push --type=next"
   },
   "keywords": [
     "fetch",
@@ -41,6 +40,6 @@
   },
   "devDependencies": {
     "@types/bun": "^1.2.17",
-    "itty-packager": "^1.0.11"
+    "itty-packager": "^1.6.6"
   }
 }
