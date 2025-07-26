@@ -1,6 +1,8 @@
 .DS_Store
 .claude
+.dist
 .vscode
+CLAUDE.md
 node_modules
 coverage
 dist
