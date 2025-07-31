@@ -23,7 +23,8 @@ Fetcher is an ultra-compact (~650 bytes) wrapper around native `Fetch`, designed
 
 ## Fetcher allows this:
 ```ts
-const newUser = await fetcher().post<NewUser, User>('/api/users', { name: 'Alice' })
+const newUser = await fetcher()
+                  .post<NewUserDetails, User>('/api/users', { name: 'Alice' })
 ```
 
 ## Instead of this:
