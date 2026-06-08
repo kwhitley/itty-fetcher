@@ -40,7 +40,7 @@ let handleRequest = async (
   let response = await (options.fetch || fetch)(new Request(url, { ...options, headers })),
     error = response.ok
       ? undefined
-      : Object.assign(new Error(response.statusText), { status: response.status, response })
+      : Object.assign(new Error('HTTP ' + response.status), { status: response.status, response })
 
   // parse response (if allowed)
   if (options.parse ?? 'json') {
@@ -48,7 +48,7 @@ let handleRequest = async (
       response = await response[options.parse ?? 'json']()
 
       if (error && (options.parse ?? 'json') == 'json') {
-        error = { ...error, ...response }
+        Object.assign(error, response)
       }
     } catch (parseError: any) {
       if (!error) {
