@@ -441,7 +441,7 @@ const tests: TestTree = {
           expect(error.status).toBe(404)
           expect(error.response).toBeInstanceOf(Response)
           expect(error.response.status).toBe(404)
-          expect(error.message).toBe('')
+          expect(error.message).toBe('HTTP 404')
         },
         '404 with JSON body returns [error, undefined]': async () => {
           // @ts-ignore
@@ -579,6 +579,7 @@ const tests: TestTree = {
             expect(error.status).toBe(400)
             expect(error.response).toBeInstanceOf(Response)
             expect(error.response.status).toBe(400)
+            expect(error.message).toBe('HTTP 400')
           }
         },
         '500 with text error body': async () => {
