@@ -687,6 +687,32 @@ const tests: TestTree = {
       await fetcher(ABSOLUTE_ORIGIN_NOSLASH, { fetch }).get('/dogs')
       expect(request.url).toBe(`${ABSOLUTE_ORIGIN_NOSLASH}/dogs`)
     },
+    'fetcher().get("/api/hello") ignores current page path': async ({ fetch, request }) => {
+      globalThis.location.pathname = '/page'
+      await fetcher({ fetch }).get('/api/hello')
+      globalThis.location.pathname = '/'
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/api/hello`)
+    },
+    'fetcher().get("/api/hello") ignores hash in location': async ({ fetch, request }) => {
+      globalThis.location.pathname = '/page'
+      await fetcher({ fetch }).get('/api/hello')
+      globalThis.location.pathname = '/'
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/api/hello`)
+    },
+    'fetcher().get("/api/hello") ignores query in location': async ({ fetch, request }) => {
+      globalThis.location.pathname = '/page'
+      globalThis.location.search = '?foo=bar'
+      await fetcher({ fetch }).get('/api/hello')
+      globalThis.location.pathname = '/'
+      globalThis.location.search = ''
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/api/hello`)
+    },
+    'fetcher().get("info") resolves relative to current page path': async ({ fetch, request }) => {
+      globalThis.location.pathname = '/page'
+      await fetcher({ fetch }).get('info')
+      globalThis.location.pathname = '/'
+      expect(request.url).toBe(`${LOCAL_ORIGIN}/page/info`)
+    },
   },
 }
 
