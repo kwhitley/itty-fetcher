@@ -10,12 +10,15 @@ let handleRequest = async (
   headers = new Headers(globalOptions.headers),
   isString = typeof payload == 'string',
   baseUrl: any = globalOptions.base ?? '',
+  location: any = globalThis.location,
 ) => {
   // construct url
   url = new URL(
     (url.includes('://')
       ? url
-      : (baseUrl.includes?.('://') ? baseUrl : globalThis.location?.href + '/' + baseUrl) +
+      : (baseUrl.includes?.('://')
+        ? baseUrl
+        : location?.origin + (url[0] == '/' ? '' : location?.pathname) + '/' + baseUrl) +
         (url ? '/' + url : '')
     ).replace(/\/+/g, '/'),
   )
