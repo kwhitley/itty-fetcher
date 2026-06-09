@@ -18,7 +18,7 @@ let handleRequest = async (
       ? url
       : (baseUrl.includes?.('://')
         ? baseUrl
-        : (location?.origin ?? '') + (url[0] == '/' ? '' : location?.pathname ?? '') + '/' + baseUrl) +
+        : location?.origin + (url[0] == '/' ? '' : location?.pathname) + '/' + baseUrl) +
         (url ? '/' + url : '')
     ).replace(/\/+/g, '/'),
   )
